@@ -197,7 +197,7 @@ body,button,input,select{font-family:var(--f-ui)}
         <div class="grp">
           <span class="lbl">Labels</span>
           <label class="inl"><input type="checkbox" id="showSF"> Show square footage</label>
-          <label class="inl"><input type="checkbox" id="showDia"> Show diameter in feet</label>
+          <label class="inl"><input type="checkbox" id="showNotes"> Show notes</label>
           <label class="inl"><input type="checkbox" id="sheetIcons"> Show icons</label>
           <label class="inl"><input type="checkbox" id="sheetLegend"> Legend (bottom right)</label>
         </div>
@@ -264,6 +264,7 @@ body,button,input,select{font-family:var(--f-ui)}
           <label class="inl"><input type="checkbox" id="showDirect"> Direct access lines</label>
           <label class="inl"><input type="checkbox" id="showClose"> Close-to lines</label>
           <label class="inl"><input type="checkbox" id="adjSF"> Square footage in bubbles</label>
+          <label class="inl"><input type="checkbox" id="adjNotes"> Notes in bubbles</label>
           <label class="inl"><input type="checkbox" id="adjIcons"> Icons on bubbles</label>
           <label class="inl"><input type="checkbox" id="adjClusters"> Clusters</label>
           <label class="inl"><input type="checkbox" id="adjLegendChk"> Legend (bottom right)</label>
@@ -1008,7 +1009,7 @@ function bubblePDF(doc,cx,cy,R,color,seed,lw){
 /* ---------- sheets view ---------- */
 function sheetItems(){
   const sc=scaleObj().v;
-  return validSpaces().filter(s=>s.include).map(s=>({id:s.id, name:s.name, sf:s.sf, note:s.note, color:colorOf(s), icons:s.icons, rft:radiusFt(s.sf), r:radiusFt(s.sf)*sc}));
+  return validSpaces().filter(s=>s.include).map(s=>({id:s.id, name:s.name, sf:s.sf, note:S.sheet.showNotes!==false?s.note:"", color:colorOf(s), icons:s.icons, rft:radiusFt(s.sf), r:radiusFt(s.sf)*sc}));
 }
 function labelSpec(rIn){ const fs=Math.max(0.07, Math.min(0.2, rIn*0.26)); return {fs, chars:Math.max(4, Math.floor(1.75*rIn/(fs*0.6)))}; }
 function niceBarFt(sc, maxIn){
@@ -1029,7 +1030,7 @@ function renderSheets(){
   const sh=S.sheet;
   $("paperSel").value=sh.paper; $("orientSel").value=sh.orient; $("marginIn").value=sh.margin; $("gapIn").value=sh.gap;
   syncStyleControls();
-  $("showSF").checked=sh.showSF; $("showDia").checked=sh.showDia; $("sheetIcons").checked=sh.showIcons; $("sheetLegend").checked=sh.legend;
+  $("showSF").checked=sh.showSF; $("showNotes").checked=sh.showNotes!==false; $("sheetIcons").checked=sh.showIcons; $("sheetLegend").checked=sh.legend;
   renderChips();
   const cb=contentBox(); const items=sheetItems();
   const pack = packAll(items, cb.w, cb.h, Math.max(0,+sh.gap||0));
@@ -1056,7 +1057,7 @@ function sheetSVG(sheet, i, N, cb, pxW){
   for(const p of sheet){
     const cx=cb.x+p.x, cy=cb.y+p.y, ink=inkFor(p.color);
     g+=bubbleSVGStr(cx, cy, p.r, p.color, seedOf(p.id), 0.012, "wc"+i);
-    g+=svgLabel(p, cx, cy, p.r, ink, S.sheet.showSF, S.sheet.showDia);
+    g+=svgLabel(p, cx, cy, p.r, ink, S.sheet.showSF, false);
     if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.42); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>{ g+=iconBadgeSVG(p.icons[j], cx+q.x, cy+q.y, br); }); }
   }
   if(cb.lg){ const ly=cb.ph-cb.m-FOOTER-cb.lg/2+0.02, fs=0.1;
@@ -1092,7 +1093,7 @@ function scaleBarSVG(x, y, sc){
 $("marginIn").addEventListener("change", e=>{ S.sheet.margin=Math.min(2,Math.max(0.25,parseFloat(e.target.value)||0.5)); persist(); renderSheets(); });
 $("gapIn").addEventListener("change", e=>{ S.sheet.gap=Math.min(1,Math.max(0,parseFloat(e.target.value)||0)); persist(); renderSheets(); });
 $("showSF").addEventListener("change", e=>{ S.sheet.showSF=e.target.checked; persist(); renderSheets(); });
-$("showDia").addEventListener("change", e=>{ S.sheet.showDia=e.target.checked; persist(); renderSheets(); });
+$("showNotes").addEventListener("change", e=>{ S.sheet.showNotes=e.target.checked; persist(); renderSheets(); });
 $("sheetIcons").addEventListener("change", e=>{ S.sheet.showIcons=e.target.checked; persist(); renderSheets(); });
 $("sheetLegend").addEventListener("change", e=>{ S.sheet.legend=e.target.checked; persist(); renderSheets(); });
 $("selAll").onclick=()=>{ S.spaces.forEach(s=>s.include=true); persist(); renderProgram(); renderSheets(); };
@@ -1145,7 +1146,7 @@ $("pdfSheets").addEventListener("click", ()=>{
     for(const p of sheet){
       const [r,g,b]=hexToRgb(p.color); doc.setFillColor(r,g,b); const ink=hexToRgb(PAPER_INK); doc.setDrawColor(ink[0],ink[1],ink[2]); doc.setLineWidth(0.012);
       bubblePDF(doc, cb.x+p.x, cb.y+p.y, p.r, p.color, seedOf(p.id), 0.012);
-      pdfLabel(doc, p, cb.x+p.x, cb.y+p.y, p.r, S.sheet.showSF, S.sheet.showDia);
+      pdfLabel(doc, p, cb.x+p.x, cb.y+p.y, p.r, S.sheet.showSF, false);
       if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.42); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>iconPDF(doc, p.icons[j], cb.x+p.x+q.x, cb.y+p.y+q.y, br)); }
     }
     if(cb.lg) pdfIconLegend(doc, sheetLegendItems(), cb.pw-cb.m, cb.ph-cb.m-FOOTER-cb.lg/2+0.02);
@@ -1346,7 +1347,7 @@ function edgeSeg(A,B,ra,rb){
 }
 function renderAdj(refit){
   const nodes=adjNodes(); const rel=computeRelations();
-  $("showDirect").checked=S.adj.showDirect; $("showClose").checked=S.adj.showClose; $("adjSF").checked=S.adj.showSF;
+  $("showDirect").checked=S.adj.showDirect; $("showClose").checked=S.adj.showClose; $("adjSF").checked=S.adj.showSF; $("adjNotes").checked=S.adj.showNotes!==false;
   $("keepPinned").checked=S.adj.keepPinned; $("fitSheet").checked=S.adj.fit;
   $("adjIcons").checked=S.adj.showIcons; $("adjClusters").checked=S.adj.showClusters; $("adjLegendChk").checked=S.adj.legend;
   syncStyleControls(); $("clStyle").value=S.adj.clusterStyle; $("clFill").value=S.adj.clusterFill; $("clNames").checked=S.adj.clusterNames;
@@ -1403,7 +1404,7 @@ function renderAdj(refit){
     g.appendChild(c);
     const fs=Math.max(avgR*0.13, Math.min(n.rft*0.26, avgR*0.32));
     const chars=Math.max(4,Math.floor(1.75*n.rft/(fs*0.6)));
-    const lines=wrapText(n.name,chars,3); const ex=S.adj.showSF?[fmt(n.sf)+" SF"]:[]; if(n.note) ex.push(n.note);
+    const lines=wrapText(n.name,chars,3); const ex=S.adj.showSF?[fmt(n.sf)+" SF"]:[]; if(n.note && S.adj.showNotes!==false) ex.push(n.note);
     const lh=fs*1.12; let y=-(lines.length+ex.length-1)*lh/2; const ink=inkFor(n.color);
     lines.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","Lexend, Arial"); t.setAttribute("font-weight","700"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
     ex.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs*0.8); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","Lexend, Arial"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
@@ -1575,6 +1576,7 @@ $("keepPinned").addEventListener("change", e=>{ S.adj.keepPinned=e.target.checke
 $("showDirect").addEventListener("change", e=>{ S.adj.showDirect=e.target.checked; persist(); renderAdj(false); });
 $("showClose").addEventListener("change", e=>{ S.adj.showClose=e.target.checked; persist(); renderAdj(false); });
 $("adjSF").addEventListener("change", e=>{ S.adj.showSF=e.target.checked; persist(); renderAdj(false); });
+$("adjNotes").addEventListener("change", e=>{ S.adj.showNotes=e.target.checked; persist(); renderAdj(false); });
 $("hubSel").addEventListener("change", e=>{ S.adj.hub=e.target.value; persist(); });
 $("hubBtn").addEventListener("click", ()=>{
   if(!validSpaces().some(x=>x.id===S.adj.hub)){ const deg={}; computeRelations().edges.forEach(e=>{ deg[e.a]=(deg[e.a]||0)+1; deg[e.b]=(deg[e.b]||0)+1; });
@@ -1655,7 +1657,7 @@ $("pdfAdj").addEventListener("click", ()=>{
   });
   doc.setLineDashPattern([],0);
   nodes.forEach(n=>{ const p=S.adj.pos[n.id]; const [r,g,b]=hexToRgb(n.color); bubblePDF(doc, X(p.x), Y(p.y), n.rft*s, n.color, seedOf(n.id), 0.012);
-    pdfLabel(doc,{name:n.name,sf:n.sf,note:n.note,color:n.color,rft:n.rft},X(p.x),Y(p.y),n.rft*s,S.adj.showSF,false);
+    pdfLabel(doc,{name:n.name,sf:n.sf,note:S.adj.showNotes!==false?n.note:"",color:n.color,rft:n.rft},X(p.x),Y(p.y),n.rft*s,S.adj.showSF,false);
     if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.27, n.rft*0.45)*s; badgeSpots(n.icons.length, n.rft*s, br, 0).forEach((q,j)=>iconPDF(doc, n.icons[j], X(p.x)+q.x, Y(p.y)+q.y, br)); }
     doc.setDrawColor(ink[0],ink[1],ink[2]); });
   // legend
