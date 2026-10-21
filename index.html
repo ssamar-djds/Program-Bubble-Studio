@@ -13,23 +13,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-/* Layout: drafting-table tool — a slim title block across the top, three numbered steps as tabs, a control rail beside a white "paper" work area. */
+/* Always light: white page whatever the viewer's theme. Layout: drafting-table tool — a slim title block across the top, three numbered steps as tabs, a control rail beside a white "paper" work area. */
 :root{
-  --bg:#eef0ec; --panel:#ffffff; --ink:#1d2220; --muted:#5d6661; --line:#d3d8d2;
+  --bg:#ffffff; --panel:#ffffff; --ink:#1d2220; --muted:#5d6661; --line:#d3d8d2;
   --accent:#1f6b64; --accent-ink:#ffffff; --accent-soft:#dcebe8;
   --warn:#a5491c; --warn-soft:#f8e6dc;
-  --paper:#ffffff; --paper-ink:#232826; --paper-line:#c9cec9; --desk:#e3e6e1;
+  --paper:#ffffff; --paper-ink:#232826; --paper-line:#c9cec9; --desk:#eef0ec;
+  color-scheme:light;
   --f-ui:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#131615; --panel:#1b1f1e; --ink:#e6eae7; --muted:#9aa49f; --line:#2f3533;
-  --accent:#5cbfb3; --accent-ink:#0d1413; --accent-soft:#1f3532;
-  --warn:#f0a07a; --warn-soft:#3a2219; --desk:#0f1211; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#131615; --panel:#1b1f1e; --ink:#e6eae7; --muted:#9aa49f; --line:#2f3533;
-  --accent:#5cbfb3; --accent-ink:#0d1413; --accent-soft:#1f3532;
-  --warn:#f0a07a; --warn-soft:#3a2219; --desk:#0f1211; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.4}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px;max-width:1500px;margin:0 auto}
@@ -60,7 +53,16 @@ section.view{padding-top:18px}
 .drop{border:1.5px dashed var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--panel)}
 .drop.over{border-color:var(--accent);background:var(--accent-soft)}
 .tablewrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);background:var(--panel)}
-table.prog{border-collapse:collapse;width:100%;min-width:1360px}
+table.prog{border-collapse:collapse;width:100%;min-width:1400px}
+table.prog .selcol{width:34px;text-align:center}
+table.prog input::placeholder{color:#b8bdb8}
+table.prog tr.sel td{background:var(--accent-soft)}
+.bulkbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 12px;background:var(--accent-soft);border:1px solid var(--accent);border-bottom:0;margin-top:14px;font-size:14px}
+.bulkbar label{display:flex;gap:6px;align-items:center}
+.bulkbar input[type=text],.bulkbar input[type=number]{width:120px}
+.bulkbar .grp{display:flex;gap:6px;align-items:center}
+.bulkbar + .tablewrap{margin-top:0}
+.adjtable{margin-top:26px}
 table.prog th{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);text-align:left;padding:8px 8px;border-bottom:1.5px solid var(--ink);font-weight:600;white-space:nowrap}
 table.prog td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 table.prog td input[type=text],table.prog td input[type=number]{width:100%;border-color:transparent;background:transparent}
@@ -90,7 +92,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
 .sheetcard .cap{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
 .stats{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:14px;margin-bottom:12px}
 .stats b{font-family:var(--f-mono);font-weight:500}
-#adjSvg{background:var(--paper);display:block;width:100%;height:68vh;min-height:380px;touch-action:none;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+#adjSvg{background:var(--paper);display:block;width:100%;height:68vh;min-height:380px;touch-action:none;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.06)}
 #adjSvg .node{cursor:grab}
 #adjSvg .node.dragging{cursor:grabbing}
 .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted);margin-top:8px;align-items:center}
@@ -143,7 +145,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
     <div class="drop" id="drop">
       <div class="grow" style="min-width:220px">
         <strong>Load your program from Excel, or type it in below</strong>
-        <div class="hint">Excel columns: <b>Space Name</b>, <b>Square Feet</b>, <b>Direct Access</b>, <b>Close To</b>, plus optional <b>Icons</b> (Acoustic, Privacy, Nature, Sunlight), <b>Cluster</b>, <b>Category</b>, <b>Notes</b> and <b>Quantity</b>. List related spaces separated by commas. Drop a .xlsx or .csv here, or choose a file. No file? Start a blank program and add spaces one at a time.</div>
+        <div class="hint">Excel columns: <b>Space Name</b>, <b>Square Feet</b>, <b>Direct Access</b>, <b>Close To</b>, plus optional <b>Icons</b> (Acoustic, Privacy, Nature, Sunlight), <b>Cluster</b>, <b>Color Group</b>, <b>Notes</b> and <b>Quantity</b>. List related spaces separated by commas. Drop a .xlsx or .csv here, or choose a file. No file? Start a blank program and add spaces one at a time.</div>
       </div>
       <label class="btn primary" for="fileIn">Choose Excel file</label>
       <input id="fileIn" type="file" accept=".xlsx,.xls,.csv" hidden>
@@ -160,7 +162,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
       <label class="qf"><span>Direct access to</span><input type="text" id="qaDirect" list="spaceNames" placeholder="Comma-separated names"></label>
       <label class="qf"><span>Close to</span><input type="text" id="qaClose" list="spaceNames" placeholder="Comma-separated names"></label>
       <label class="qf"><span>Cluster</span><input type="text" id="qaCluster" list="clusterNames" placeholder="Optional"></label>
-      <label class="qf"><span>Category</span><input type="text" id="qaCat" list="catNames" placeholder="Optional"></label>
+      <label class="qf"><span>Color group</span><input type="text" id="qaCat" list="catNames" placeholder="Optional"></label>
       <button class="btn primary" type="submit" style="align-self:end">Add</button>
       <span class="hint" style="grid-column:1/-1;font-size:13px">A quantity above 1 adds that many copies, grouped in a cluster named after the space unless you name one. Link other spaces to the cluster name to draw one line to the whole group.</span>
     </form>
@@ -169,13 +171,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
     <datalist id="catNames"></datalist>
     <div id="sampleNote" class="notice" hidden>This is a sample program so you can see how the tool works. Load your Excel file or edit the rows below to replace it.</div>
     <div id="progWarn"></div>
-    <div class="tablewrap">
-      <table class="prog">
-        <thead><tr><th style="width:44px">Color</th><th style="width:22%">Space name</th><th style="width:100px;text-align:right">SF</th><th>Direct access</th><th>Close to</th><th style="width:132px">Icons</th><th style="width:130px">Cluster</th><th style="width:120px">Category</th><th style="width:110px">Notes</th><th style="width:48px">Print</th><th style="width:36px"></th></tr></thead>
-        <tbody id="progBody"></tbody>
-        <tfoot><tr><td></td><td><span id="countLbl"></span></td><td class="mono" style="text-align:right" id="footSF"></td><td colspan="8"></td></tr></tfoot>
-      </table>
-    </div>
+    <div id="tblProgram" data-tbl="tblProgram"></div>
     <div class="row" style="margin-top:12px">
       <button class="btn" id="addRow">+ Add space</button>
       <button class="btn" id="resetColors">Reset colors</button>
@@ -184,7 +180,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
       <span id="clearWrap"><button class="btn" id="clearBtn">Clear program</button></span>
     </div>
     <div id="catPanel" class="catpanel"></div>
-    <p class="hint" style="margin-top:14px">Bubbles are drawn as circles whose area equals the space's square footage. Give spaces a <b>Category</b> (for example Work, Support, Building) to color them as a group; change a category's color below the table. Spaces without a category keep their own color. Notes (like "(10 ppl)") print as an extra line in the bubble.</p>
+    <p class="hint" style="margin-top:14px">Bubbles are drawn as circles whose area equals the space's square footage. Give spaces a <b>Color group</b> (for example Work, Support, Building) to color them together; change a group's color below the table. Spaces without a color group keep their own color. Tick the boxes on the left to select several rows and change them all at once (Shift-click selects a range). Notes (like "(10 ppl)") print as an extra line in the bubble.</p>
   </section>
 
   <!-- SHEETS -->
@@ -290,8 +286,15 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
           <span><svg width="44" height="10"><line x1="2" y1="5" x2="42" y2="5" stroke="currentColor" stroke-width="2.5"/></svg> Direct access</span>
           <span><svg width="44" height="10"><line x1="2" y1="5" x2="42" y2="5" stroke="currentColor" stroke-width="1.6" stroke-dasharray="5 4"/></svg> Close to</span>
           <span><svg width="14" height="14"><circle cx="7" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="1.6" fill="currentColor"/></svg> Dragged (held in place)</span>
+          <span>Shift-click a bubble to select it in the table</span>
         </div>
       </div>
+    </div>
+    <div class="adjtable">
+      <div class="lbl">Program table</div>
+      <p class="hint" style="margin:4px 0 0">Edit here and the diagram above updates as you type. Tick rows to change several at once.</p>
+      <div id="tblAdj" data-tbl="tblAdj"></div>
+      <div class="catpanel"></div>
     </div>
   </section>
 </div>
@@ -565,49 +568,137 @@ function setTab(t){
 document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click", ()=>setTab(b.dataset.tab)));
 
 /* ---------- program table ---------- */
-function renderProgram(){
-  syncCats();
-  const body=$("progBody"); body.innerHTML="";
-  const rel = computeRelations();
-  S.spaces.forEach((s,i)=>{
-    const tr=document.createElement("tr");
-    const unk = rel.unknown[s.id];
-    tr.innerHTML = `
-      <td><input type="color" id="c_${s.id}" value="${colorOf(s)}" aria-label="Color for ${esc(s.name)}" title="${catKey(s)?"Changes the color of every "+esc(s.category)+" space":"Color for this space"}"></td>
-      <td><input type="text" id="n_${s.id}" value="${esc(s.name)}" placeholder="Space name"></td>
-      <td class="num"><input type="number" id="f_${s.id}" min="0" step="10" value="${s.sf||""}" placeholder="0"></td>
-      <td><input type="text" id="d_${s.id}" value="${esc(s.direct||"")}" placeholder="e.g. Lobby, Kitchen"></td>
-      <td><input type="text" id="k_${s.id}" value="${esc(s.close||"")}" placeholder="e.g. Storage">${unk?`<div class="unk">Not found: ${esc(unk.join(", "))}</div>`:""}</td>
-      <td><div class="icotogs">${ICON_KEYS.map(k=>`<button type="button" class="icotog" data-k="${k}" title="${ICON_LABEL[k]}" aria-label="${ICON_LABEL[k]}" aria-pressed="${s.icons.includes(k)}">${iconSwatch(k)}</button>`).join("")}</div></td>
-      <td><input type="text" id="g_${s.id}" value="${esc(s.cluster||"")}" list="clusterNames" placeholder="None"></td>
-      <td><input type="text" id="t_${s.id}" value="${esc(s.category||"")}" list="catNames" placeholder="None"></td>
-      <td><input type="text" id="o_${s.id}" value="${esc(s.note||"")}" placeholder="e.g. (10 ppl)"></td>
-      <td style="text-align:center"><input type="checkbox" id="p_${s.id}" ${s.include?"checked":""} aria-label="Include in print sheets"></td>
-      <td><button class="iconbtn" title="Remove space" aria-label="Remove ${esc(s.name)}">×</button></td>`;
-    const q = sel => tr.querySelector(sel);
-    q(`#c_${s.id}`).addEventListener("input", e=>{ const k=catKey(s); if(k&&S.cats[k]){ S.cats[k].color=e.target.value; } else s.color=e.target.value; persist(); refreshDerived(); });
-    q(`#c_${s.id}`).addEventListener("change", ()=>{ if(catKey(s)) renderProgram(); });
-    q(`#t_${s.id}`).addEventListener("change", e=>{ s.category=e.target.value.trim(); syncCats(); afterEdit(true); });
-    q(`#o_${s.id}`).addEventListener("change", e=>{ s.note=e.target.value.trim(); afterEdit(false); });
-    q(`#n_${s.id}`).addEventListener("change", e=>{ s.name=e.target.value.trim(); afterEdit(true); });
-    q(`#f_${s.id}`).addEventListener("change", e=>{ s.sf=parseFloat(e.target.value)||0; afterEdit(false); });
-    q(`#d_${s.id}`).addEventListener("change", e=>{ s.direct=e.target.value; afterEdit(true); });
-    q(`#k_${s.id}`).addEventListener("change", e=>{ s.close=e.target.value; afterEdit(true); });
-    q(`#p_${s.id}`).addEventListener("change", e=>{ s.include=e.target.checked; persist(); refreshDerived(); });
-    q(`#g_${s.id}`).addEventListener("change", e=>{ s.cluster=e.target.value.trim(); afterEdit(true); });
-    tr.querySelectorAll(".icotog").forEach(b=>b.addEventListener("click", ()=>{ toggleIcon(s, b.dataset.k); b.setAttribute("aria-pressed", s.icons.includes(b.dataset.k)); persist(); refreshDerived(); }));
-    q(".iconbtn").addEventListener("click", ()=>{ S.spaces.splice(S.spaces.indexOf(s),1); delete S.adj.pos[s.id]; delete S.adj.pinned[s.id]; afterEdit(true); });
-    body.appendChild(tr);
+/* ---------- program tables (Program tab + under the adjacency diagram) ---------- */
+const TABLES=["tblProgram","tblAdj"];
+const sel=new Set(); let lastSelIdx=null, bulkConfirm=false;
+function tableShell(){
+  return `<div class="bulkbar" hidden></div><div class="tablewrap"><table class="prog">
+    <thead><tr><th class="selcol"><input type="checkbox" class="sel-all" aria-label="Select all spaces"></th><th style="width:44px">Color</th><th style="width:20%">Space name</th><th style="width:100px;text-align:right">SF</th><th>Direct access</th><th>Close to</th><th style="width:132px">Icons</th><th style="width:130px">Cluster</th><th style="width:120px">Color group</th><th style="width:110px">Notes</th><th style="width:48px">Print</th><th style="width:36px"></th></tr></thead>
+    <tbody></tbody>
+    <tfoot><tr><td></td><td></td><td><span class="t-count"></span></td><td class="mono t-sf" style="text-align:right"></td><td colspan="8"></td></tr></tfoot></table></div>`;
+}
+function liveRefresh(){ S.sample=false; persist(); updateTotals(); $("sampleNote").hidden=true; if(S.tab==="sheets") renderSheets(); if(S.tab==="adjacency") renderAdj(false); }
+function rowHTML(s, unk){
+  return `<tr data-id="${s.id}" class="${sel.has(s.id)?"sel":""}">
+    <td class="selcol"><input type="checkbox" class="f-sel" ${sel.has(s.id)?"checked":""} aria-label="Select ${esc(s.name)}"></td>
+    <td><input type="color" class="f-color" value="${colorOf(s)}" aria-label="Color for ${esc(s.name)}" title="${catKey(s)?"Changes the color of every "+esc(s.category)+" space":"Color for this space"}"></td>
+    <td><input type="text" class="f-name" value="${esc(s.name)}" placeholder="Space name"></td>
+    <td class="num"><input type="number" class="f-sf" min="0" step="10" value="${s.sf||""}" placeholder="0"></td>
+    <td><input type="text" class="f-dir" value="${esc(s.direct||"")}" list="spaceNames" placeholder="e.g. Lobby, Kitchen"></td>
+    <td><input type="text" class="f-close" value="${esc(s.close||"")}" list="spaceNames" placeholder="e.g. Storage">${unk?`<div class="unk">Not found: ${esc(unk.join(", "))}</div>`:""}</td>
+    <td><div class="icotogs">${ICON_KEYS.map(k=>`<button type="button" class="icotog" data-k="${k}" title="${ICON_LABEL[k]}" aria-label="${ICON_LABEL[k]}" aria-pressed="${s.icons.includes(k)}">${iconSwatch(k)}</button>`).join("")}</div></td>
+    <td><input type="text" class="f-cl" value="${esc(s.cluster||"")}" list="clusterNames" placeholder="None"></td>
+    <td><input type="text" class="f-cat" value="${esc(s.category||"")}" list="catNames" placeholder="None"></td>
+    <td><input type="text" class="f-note" value="${esc(s.note||"")}" placeholder="e.g. (10 ppl)"></td>
+    <td style="text-align:center"><input type="checkbox" class="f-print" ${s.include?"checked":""} aria-label="Include in print sheets"></td>
+    <td><button type="button" class="iconbtn f-del" title="Remove space" aria-label="Remove ${esc(s.name)}">×</button></td></tr>`;
+}
+function bulkHTML(){
+  const list=S.spaces.filter(x=>sel.has(x.id)); const n=list.length;
+  if(bulkConfirm) return `<b>Delete ${n} space${n>1?"s":""}?</b><button type="button" class="btn small" data-b="delyes">Yes, delete</button><button type="button" class="btn small" data-b="delno">Cancel</button>`;
+  return `<b>${n} selected</b>
+    <span class="grp"><label>Color group <input type="text" class="b-cat" list="catNames" placeholder="e.g. Work"></label><button type="button" class="btn small" data-b="cat">Set</button></span>
+    <span class="grp"><label>Cluster <input type="text" class="b-cl" list="clusterNames" placeholder="e.g. Storage"></label><button type="button" class="btn small" data-b="cl">Set</button></span>
+    <span class="grp"><label>SF <input type="number" class="b-sf" min="1" style="width:80px"></label><button type="button" class="btn small" data-b="sf">Set</button></span>
+    <span class="grp"><label>Notes <input type="text" class="b-note" placeholder="e.g. (2 ppl)"></label><button type="button" class="btn small" data-b="note">Set</button></span>
+    <span class="grp">Icons <span class="icotogs">${ICON_KEYS.map(k=>`<button type="button" class="icotog" data-bk="${k}" title="${ICON_LABEL[k]}: add to all, or remove if all have it" aria-label="${ICON_LABEL[k]}" aria-pressed="${n>0&&list.every(x=>x.icons.includes(k))}">${iconSwatch(k)}</button>`).join("")}</span></span>
+    <span class="grp"><button type="button" class="btn small" data-b="inc">Print on</button><button type="button" class="btn small" data-b="exc">Print off</button></span>
+    <span class="grp"><button type="button" class="btn small" data-b="del">Delete</button><button type="button" class="btn small" data-b="clear">Clear selection</button></span>`;
+}
+function selectedSpaces(){ return S.spaces.filter(x=>sel.has(x.id)); }
+function onBulk(e){
+  const box=e.currentTarget, b=e.target.closest("[data-b],[data-bk]"); if(!b) return;
+  const list=selectedSpaces(); const val=c=>{ const i=box.querySelector(c); return i?i.value.trim():""; };
+  const done=msg=>{ afterEdit(true); if(msg) toast(msg); };
+  if(b.dataset.bk){ const k=b.dataset.bk, all=list.every(x=>x.icons.includes(k));
+    list.forEach(x=>{ x.icons = all ? x.icons.filter(y=>y!==k) : ICON_KEYS.filter(y=>y===k||x.icons.includes(y)); });
+    return done(`${ICON_LABEL[k]} ${all?"removed from":"added to"} ${list.length} space${list.length>1?"s":""}`); }
+  switch(b.dataset.b){
+    case "cat": { const v=val(".b-cat"); list.forEach(x=>x.category=v); syncCats(); return done(v?`Color group "${v}" set for ${list.length} spaces`:`Color group cleared for ${list.length} spaces`); }
+    case "cl": { const v=val(".b-cl"); list.forEach(x=>x.cluster=v); return done(v?`${list.length} spaces added to cluster "${v}"`:`Cluster cleared for ${list.length} spaces`); }
+    case "sf": { const v=parseFloat(val(".b-sf")); if(!(v>0)) return toast("Type a square footage first."); list.forEach(x=>x.sf=v); return done(`${list.length} spaces set to ${fmt(v)} SF`); }
+    case "note": { const v=val(".b-note"); list.forEach(x=>x.note=v); return done(`Notes updated for ${list.length} spaces`); }
+    case "inc": list.forEach(x=>x.include=true); return done("Included in print sheets");
+    case "exc": list.forEach(x=>x.include=false); return done("Left out of print sheets");
+    case "del": bulkConfirm=true; return renderProgram();
+    case "delno": bulkConfirm=false; return renderProgram();
+    case "delyes": { const n=list.length; S.spaces=S.spaces.filter(x=>!sel.has(x.id)); list.forEach(x=>{ delete S.adj.pos[x.id]; delete S.adj.pinned[x.id]; }); sel.clear(); bulkConfirm=false; return done(`Deleted ${n} space${n>1?"s":""}`); }
+    case "clear": sel.clear(); bulkConfirm=false; renderProgram(); if(S.tab==="adjacency") renderAdj(false); return;
+  }
+}
+function setSelected(id, on, shift){
+  const idx=S.spaces.findIndex(x=>x.id===id);
+  if(shift && lastSelIdx!=null){ const [a,b]=[Math.min(lastSelIdx,idx),Math.max(lastSelIdx,idx)]; for(let i=a;i<=b;i++) on?sel.add(S.spaces[i].id):sel.delete(S.spaces[i].id); }
+  else on?sel.add(id):sel.delete(id);
+  lastSelIdx=idx; bulkConfirm=false;
+  renderProgram(); if(S.tab==="adjacency") renderAdj(false);
+}
+function wireTable(id){
+  const host=$(id); host.innerHTML=tableShell();
+  const tb=host.querySelector("tbody");
+  host.querySelector(".sel-all").addEventListener("change", e=>{ if(e.target.checked) S.spaces.forEach(x=>sel.add(x.id)); else sel.clear(); bulkConfirm=false; renderProgram(); if(S.tab==="adjacency") renderAdj(false); });
+  host.querySelector(".bulkbar").addEventListener("click", onBulk);
+  tb.addEventListener("input", e=>{
+    const tr=e.target.closest("tr[data-id]"); if(!tr) return; const s=spaceById(tr.dataset.id); if(!s) return; const t=e.target, v=t.value, c=t.classList;
+    if(c.contains("f-name")) s.name=v.trim();
+    else if(c.contains("f-sf")) s.sf=parseFloat(v)||0;
+    else if(c.contains("f-dir")) s.direct=v;
+    else if(c.contains("f-close")) s.close=v;
+    else if(c.contains("f-cl")) s.cluster=v.trim();
+    else if(c.contains("f-note")) s.note=v.trim();
+    else if(c.contains("f-color")){ const k=catKey(s); if(k&&S.cats[k]) S.cats[k].color=v; else s.color=v; }
+    else return;
+    liveRefresh();
   });
-  if(!S.spaces.length){ body.innerHTML=`<tr><td colspan="11" class="hint" style="padding:18px 10px">No spaces yet. Add one with the form above, or load an Excel file.</td></tr>`; }
+  tb.addEventListener("change", e=>{
+    const tr=e.target.closest("tr[data-id]"); if(!tr) return; const s=spaceById(tr.dataset.id); if(!s) return; const t=e.target, c=t.classList;
+    if(c.contains("f-sel")) return;
+    if(c.contains("f-cat")){ s.category=t.value.trim(); syncCats(); }
+    else if(c.contains("f-print")) s.include=t.checked;
+    else if(c.contains("f-name")) s.name=t.value.trim();
+    S.sample=false; persist(); renderProgram(id); $("sampleNote").hidden=true; refreshDerived();
+  });
+  tb.addEventListener("click", e=>{
+    const tr=e.target.closest("tr[data-id]"); if(!tr) return; const id=tr.dataset.id, s=spaceById(id); if(!s) return;
+    if(e.target.classList.contains("f-sel")){ setSelected(id, e.target.checked, e.shiftKey); return; }
+    const ib=e.target.closest(".icotog"); if(ib){ toggleIcon(s, ib.dataset.k); afterEdit(true); return; }
+    if(e.target.closest(".f-del")){ S.spaces.splice(S.spaces.indexOf(s),1); delete S.adj.pos[id]; delete S.adj.pinned[id]; sel.delete(id); afterEdit(true); }
+  });
+}
+/* update a table in place (colors, warnings) without rebuilding it, so focus and clicks are kept */
+function patchTable(tid, rel){
+  $(tid).querySelectorAll("tbody tr[data-id]").forEach(tr=>{
+    const s=spaceById(tr.dataset.id); if(!s) return;
+    const sw=tr.querySelector(".f-color"); if(sw && document.activeElement!==sw) sw.value=colorOf(s);
+    const cell=tr.querySelector(".f-close").parentNode; const old=cell.querySelector(".unk"); const unk=rel.unknown[s.id];
+    if(old) old.remove(); if(unk){ const d=document.createElement("div"); d.className="unk"; d.textContent="Not found: "+unk.join(", "); cell.appendChild(d); }
+  });
+}
+function renderProgram(keepTbl){
+  syncCats();
+  [...sel].forEach(id=>{ if(!spaceById(id)) sel.delete(id); });
+  const rel = computeRelations();
+  // keep the cursor where it was when the tables redraw
+  const ae=document.activeElement, atr=ae&&ae.closest&&ae.closest("tr[data-id]"), host=ae&&ae.closest&&ae.closest("[data-tbl]");
+  const keep = atr&&host ? {tbl:host.id, id:atr.dataset.id, cls:[...ae.classList].find(c=>c.startsWith("f-")), pos:(ae.type==="text"?ae.selectionStart:null)} : null;
+  TABLES.forEach(tid=>{
+    const host=$(tid); if(!host.querySelector("tbody")) wireTable(tid);
+    const tb=host.querySelector("tbody");
+    if(tid===keepTbl && tb.querySelectorAll("tr[data-id]").length===S.spaces.length){ patchTable(tid, rel); return; }
+    tb.innerHTML = S.spaces.length ? S.spaces.map(s=>rowHTML(s, rel.unknown[s.id])).join("") : `<tr><td colspan="12" class="hint" style="padding:18px 10px">No spaces yet. Add one with the form on the Program tab, or load an Excel file.</td></tr>`;
+    const bb=host.querySelector(".bulkbar"); bb.hidden = sel.size===0; if(sel.size) bb.innerHTML=bulkHTML();
+    const sa=host.querySelector(".sel-all"); sa.checked = S.spaces.length>0 && sel.size===S.spaces.length; sa.indeterminate = sel.size>0 && sel.size<S.spaces.length;
+  });
+  if(keep&&keep.cls){ const el=document.querySelector(`#${keep.tbl} tr[data-id="${keep.id}"] .${keep.cls}`); if(el){ el.focus(); if(keep.pos!=null && el.setSelectionRange) try{ el.setSelectionRange(keep.pos,keep.pos); }catch(e){} } }
   const cl=clusterGroups();
   $("spaceNames").innerHTML = validSpaces().map(s=>`<option value="${esc(s.name)}"></option>`).join("") + Object.values(cl).map(c=>`<option value="${esc(c.name)}"></option>`).join("");
   $("clusterNames").innerHTML = Object.values(cl).map(c=>`<option value="${esc(c.name)}"></option>`).join("");
   const cats=usedCats(S.spaces);
   $("catNames").innerHTML = Object.values(cats).map(c=>`<option value="${esc(c.name)}"></option>`).join("");
-  const cp=$("catPanel");
-  cp.innerHTML = Object.keys(cats).length ? `<span class="lbl">Category colors</span>`+Object.entries(cats).map(([k,c])=>`<label class="cat"><input type="color" data-k="${esc(k)}" value="${c.color}" aria-label="Color for ${esc(c.name)}">${esc(c.name)}</label>`).join("") : "";
-  cp.querySelectorAll("input[type=color]").forEach(inp=>{ inp.addEventListener("input", e=>{ S.cats[e.target.dataset.k].color=e.target.value; persist(); refreshDerived(); }); inp.addEventListener("change", ()=>renderProgram()); });
+  document.querySelectorAll(".catpanel").forEach(cp=>{
+    cp.innerHTML = Object.keys(cats).length ? `<span class="lbl">Color group colors</span>`+Object.entries(cats).map(([k,c])=>`<label class="cat"><input type="color" data-k="${esc(k)}" value="${c.color}" aria-label="Color for ${esc(c.name)}">${esc(c.name)}</label>`).join("") : "";
+    cp.querySelectorAll("input[type=color]").forEach(inp=>{ inp.addEventListener("input", e=>{ S.cats[e.target.dataset.k].color=e.target.value; persist(); refreshDerived(); }); inp.addEventListener("change", ()=>renderProgram()); });
+  });
   $("outlineChk").checked = S.outline;
   updateTotals();
   $("sampleNote").hidden = !S.sample;
@@ -617,8 +708,8 @@ function renderProgram(){
 function updateTotals(){
   const v = validSpaces(); const tot = v.reduce((a,s)=>a+s.sf,0);
   $("totalSF").textContent = fmt(tot)+" SF";
-  $("footSF").textContent = fmt(tot);
-  $("countLbl").textContent = v.length+" spaces";
+  document.querySelectorAll(".t-sf").forEach(e=>e.textContent=fmt(tot));
+  document.querySelectorAll(".t-count").forEach(e=>e.textContent=v.length+" spaces");
 }
 function afterEdit(rerenderTable){ S.sample=false; persist(); if(rerenderTable) renderProgram(); else updateTotals(); $("sampleNote").hidden=true; refreshDerived(); }
 function refreshDerived(){ if(S.tab==="sheets") renderSheets(); if(S.tab==="adjacency") renderAdj(false); }
@@ -741,7 +832,7 @@ function xlsxBlob(aoa, sheetName){
   const out = XLSX.write(wb,{bookType:"xlsx", type:"array"});
   return new Blob([out],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
 }
-const HEAD = ["Space Name","Square Feet","Direct Access","Close To","Icons","Cluster","Category","Notes"];
+const HEAD = ["Space Name","Square Feet","Direct Access","Close To","Icons","Cluster","Color Group","Notes"];
 $("tplBtn").addEventListener("click", ()=>{
   if(typeof XLSX==="undefined") return toast("The Excel library didn't load.");
   saveFile("bubble-program-template.xlsx", xlsxBlob([[...HEAD,"Quantity"],...SAMPLE.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8]])],"Program"));
@@ -1231,9 +1322,9 @@ function renderAdj(refit){
     g.appendChild(pin);
     if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.27, n.rft*0.45); const ig=document.createElementNS(svgNS,"g"); ig.setAttribute("pointer-events","none");
       ig.innerHTML = badgeSpots(n.icons.length, n.rft, br, 0).map((q,j)=>iconBadgeSVG(n.icons[j], q.x, q.y, br)).join(""); g.appendChild(ig); }
-    if(linkFrom===n.id){ c.setAttribute("stroke","#1f6b64"); c.setAttribute("stroke-width",avgR*0.12); }
+    if(linkFrom===n.id || sel.has(n.id)){ c.setAttribute("stroke","#1f6b64"); c.setAttribute("stroke-width",avgR*(linkFrom===n.id?0.12:0.08)); }
     gN.appendChild(g); nodeEls[n.id]={g, pin, n};
-    g.addEventListener("pointerdown", ev=>{ if(linkMode==="move") startDrag(ev); else { ev.preventDefault(); ev.stopPropagation(); onNodeLink(n.id); } });
+    g.addEventListener("pointerdown", ev=>{ if(linkMode==="move" && ev.shiftKey){ ev.preventDefault(); setSelected(n.id, !sel.has(n.id), false); return; } if(linkMode==="move") startDrag(ev); else { ev.preventDefault(); ev.stopPropagation(); onNodeLink(n.id); } });
   });
   adjSvg.classList.toggle("linking", linkMode!=="move");
   updateModeHint();
