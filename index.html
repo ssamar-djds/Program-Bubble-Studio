@@ -9,7 +9,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -20,8 +20,8 @@
   --warn:#a5491c; --warn-soft:#f8e6dc;
   --paper:#ffffff; --paper-ink:#232826; --paper-line:#c9cec9; --desk:#eef0ec;
   color-scheme:light;
-  --f-ui:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-ui:"Lexend",Arial,Helvetica,sans-serif;
+  --f-mono:"Lexend",Arial,Helvetica,sans-serif;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.4}
@@ -30,7 +30,7 @@ header.tb{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;border:1.5px
 header.tb .cell{padding:8px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
 header.tb .cell+.cell{border-left:1px solid var(--line)}
 header.tb .cell.grow{flex:1 1 220px}
-header.tb .brand{font-weight:700;font-size:20px;letter-spacing:.01em;line-height:1.1}
+header.tb .brand{font-weight:600;font-size:19px;letter-spacing:.01em;line-height:1.1}
 .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
 header.tb input.proj{font:600 17px var(--f-ui);border:0;border-bottom:1px dashed var(--line);background:transparent;color:var(--ink);padding:2px 0;min-width:0;width:100%}
 select,input[type=number],input[type=text]{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:5px 8px}
@@ -72,6 +72,7 @@ table.prog input[type=color]{width:34px;height:28px;border:1px solid var(--line)
 table.prog .unk{font-size:12px;color:var(--warn);padding:0 8px}
 table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
 .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+body,button,input,select{font-family:var(--f-ui)}
 .iconbtn{background:none;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px 6px}
 .iconbtn:hover{color:var(--warn)}
 .split{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px;align-items:start}
@@ -175,7 +176,6 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
     <div class="row" style="margin-top:12px">
       <button class="btn" id="addRow">+ Add space</button>
       <button class="btn" id="resetColors">Reset colors</button>
-      <label class="inl" style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="outlineChk"> Outline bubbles</label>
       <span class="grow"></span>
       <span id="clearWrap"><button class="btn" id="clearBtn">Clear program</button></span>
     </div>
@@ -200,6 +200,11 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
           <label class="inl"><input type="checkbox" id="showDia"> Show diameter in feet</label>
           <label class="inl"><input type="checkbox" id="sheetIcons"> Show icons</label>
           <label class="inl"><input type="checkbox" id="sheetLegend"> Legend (bottom right)</label>
+        </div>
+        <div class="grp">
+          <span class="lbl">Bubble style</span>
+          <div class="field"><label for="sOutline">Outline</label><select id="sOutline" class="st-outline"><option value="none">None</option><option value="clean">Clean line</option><option value="sketch">Hand-drawn</option></select></div>
+          <div class="field"><label for="sFill">Fill</label><select id="sFill" class="st-fill"><option value="flat">Flat color</option><option value="watercolor">Watercolor</option></select></div>
         </div>
         <div class="grp">
           <div class="row" style="justify-content:space-between"><span class="lbl">Spaces to print</span><span class="row" style="gap:4px"><button class="btn small" id="selAll">All</button><button class="btn small" id="selNone">None</button></span></div>
@@ -259,10 +264,14 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
           <label class="inl"><input type="checkbox" id="showDirect"> Direct access lines</label>
           <label class="inl"><input type="checkbox" id="showClose"> Close-to lines</label>
           <label class="inl"><input type="checkbox" id="adjSF"> Square footage in bubbles</label>
-          <label class="inl"><input type="checkbox" id="adjOutline"> Outline bubbles</label>
           <label class="inl"><input type="checkbox" id="adjIcons"> Icons on bubbles</label>
           <label class="inl"><input type="checkbox" id="adjClusters"> Clusters</label>
           <label class="inl"><input type="checkbox" id="adjLegendChk"> Legend (bottom right)</label>
+        </div>
+        <div class="grp">
+          <span class="lbl">Bubble style</span>
+          <div class="field"><label for="aOutline">Outline</label><select id="aOutline" class="st-outline"><option value="none">None</option><option value="clean">Clean line</option><option value="sketch">Hand-drawn</option></select></div>
+          <div class="field"><label for="aFill">Fill</label><select id="aFill" class="st-fill"><option value="flat">Flat color</option><option value="watercolor">Watercolor</option></select></div>
         </div>
         <div class="grp">
           <span class="lbl">Clusters</span>
@@ -292,7 +301,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
     </div>
     <div class="adjtable">
       <div class="lbl">Program table</div>
-      <p class="hint" style="margin:4px 0 0">Edit here and the diagram above updates as you type. Tick rows to change several at once.</p>
+      <p class="hint" style="margin:4px 0 0">Edit here and the diagram above updates as you type. Tick several rows, then change any of them (or use the green bar) to change them all at once.</p>
       <div id="tblAdj" data-tbl="tblAdj"></div>
       <div class="catpanel"></div>
     </div>
@@ -400,7 +409,7 @@ function exampleSpaces(){ return SAMPLE.flatMap(r=>expandQty({name:r[0], sf:r[1]
 function defaultState(){
   const spaces = exampleSpaces();
   const hub = spaces.find(x=>x.name==="Open Office");
-  return {project:"Sample: Office Suite", sample:true, scale:"1/8", spaces, cats:JSON.parse(JSON.stringify(SAMPLE_CATS)), clusterCfg:JSON.parse(JSON.stringify(SAMPLE_CLUSTERS)), outline:false,
+  return {project:"Sample: Office Suite", sample:true, scale:"1/8", spaces, cats:JSON.parse(JSON.stringify(SAMPLE_CATS)), clusterCfg:JSON.parse(JSON.stringify(SAMPLE_CLUSTERS)), outline:false, outlineStyle:"none", fillStyle:"flat",
     sheet:{paper:"11x17", orient:"portrait", margin:0.5, gap:0.125, showSF:true, showDia:false, showIcons:false, legend:true},
     adj:{pos:{}, pinned:{}, keepPinned:true, showDirect:true, showClose:true, showSF:true, fit:true, seed:1, showIcons:true, showClusters:true, legend:true, clusterStyle:"fill", clusterFill:"#E4E4E4", clusterNames:false, hub:hub?hub.id:""},
     tab:"program"};
@@ -414,6 +423,8 @@ function persist(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStor
 S = load();
 S.spaces.forEach(s=>{ s.icons = Array.isArray(s.icons)? s.icons.filter(k=>ICON_KEYS.includes(k)) : []; s.cluster = s.cluster||""; s.category=s.category||""; s.note=s.note||""; });
 S.cats = S.cats||{}; S.clusterCfg = S.clusterCfg||{}; if(typeof S.outline!=="boolean") S.outline=true;
+if(!S.outlineStyle) S.outlineStyle = S.outline ? "clean" : "none";
+if(!S.fillStyle) S.fillStyle = "flat";
 if(!S.iconsV2){ S.adj.showIcons=true; S.iconsV2=true; }
 if(!S.iconsV3){ S.sheet.showIcons=false; S.iconsV3=true; }
 
@@ -597,7 +608,7 @@ function bulkHTML(){
   const list=S.spaces.filter(x=>sel.has(x.id)); const n=list.length;
   if(bulkConfirm) return `<b>Delete ${n} space${n>1?"s":""}?</b><button type="button" class="btn small" data-b="delyes">Yes, delete</button><button type="button" class="btn small" data-b="delno">Cancel</button>`;
   return `<b>${n} selected</b>
-    <span class="grp"><label>Color group <input type="text" class="b-cat" list="catNames" placeholder="e.g. Work"></label><button type="button" class="btn small" data-b="cat">Set</button></span>
+    <span class="grp">Color group ${Object.values(usedCats(S.spaces)).map(c=>`<button type="button" class="btn small" data-bcat="${esc(c.name)}"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c.color}"></i>${esc(c.name)}</button>`).join("")}<input type="text" class="b-cat" list="catNames" placeholder="New group" style="width:100px"><button type="button" class="btn small" data-b="cat">Set</button></span>
     <span class="grp"><label>Cluster <input type="text" class="b-cl" list="clusterNames" placeholder="e.g. Storage"></label><button type="button" class="btn small" data-b="cl">Set</button></span>
     <span class="grp"><label>SF <input type="number" class="b-sf" min="1" style="width:80px"></label><button type="button" class="btn small" data-b="sf">Set</button></span>
     <span class="grp"><label>Notes <input type="text" class="b-note" placeholder="e.g. (2 ppl)"></label><button type="button" class="btn small" data-b="note">Set</button></span>
@@ -606,10 +617,18 @@ function bulkHTML(){
     <span class="grp"><button type="button" class="btn small" data-b="del">Delete</button><button type="button" class="btn small" data-b="clear">Clear selection</button></span>`;
 }
 function selectedSpaces(){ return S.spaces.filter(x=>sel.has(x.id)); }
+/* editing a ticked row changes every ticked row (color group, cluster, SF, notes, print) */
+const SPREAD={ "f-cat":"category", "f-cl":"cluster", "f-sf":"sf", "f-note":"note", "f-print":"include" };
+function spreadToSelected(s, t){
+  if(!sel.has(s.id) || sel.size<2) return false;
+  const cls=Object.keys(SPREAD).find(c=>t.classList.contains(c)); if(!cls) return false;
+  const f=SPREAD[cls]; selectedSpaces().forEach(x=>{ x[f]=s[f]; }); return true;
+}
 function onBulk(e){
-  const box=e.currentTarget, b=e.target.closest("[data-b],[data-bk]"); if(!b) return;
+  const box=e.currentTarget, b=e.target.closest("[data-b],[data-bk],[data-bcat]"); if(!b) return;
   const list=selectedSpaces(); const val=c=>{ const i=box.querySelector(c); return i?i.value.trim():""; };
   const done=msg=>{ afterEdit(true); if(msg) toast(msg); };
+  if(b.dataset.bcat!=null){ const v=b.dataset.bcat; list.forEach(x=>x.category=v); syncCats(); return done(`${list.length} space${list.length>1?"s":""} set to ${v}`); }
   if(b.dataset.bk){ const k=b.dataset.bk, all=list.every(x=>x.icons.includes(k));
     list.forEach(x=>{ x.icons = all ? x.icons.filter(y=>y!==k) : ICON_KEYS.filter(y=>y===k||x.icons.includes(y)); });
     return done(`${ICON_LABEL[k]} ${all?"removed from":"added to"} ${list.length} space${list.length>1?"s":""}`); }
@@ -648,20 +667,25 @@ function wireTable(id){
     else if(c.contains("f-note")) s.note=v.trim();
     else if(c.contains("f-color")){ const k=catKey(s); if(k&&S.cats[k]) S.cats[k].color=v; else s.color=v; }
     else return;
+    spreadToSelected(s, t);
     liveRefresh();
   });
   tb.addEventListener("change", e=>{
     const tr=e.target.closest("tr[data-id]"); if(!tr) return; const s=spaceById(tr.dataset.id); if(!s) return; const t=e.target, c=t.classList;
     if(c.contains("f-sel")) return;
-    if(c.contains("f-cat")){ s.category=t.value.trim(); syncCats(); }
+    if(c.contains("f-cat")){ s.category=t.value.trim(); }
     else if(c.contains("f-print")) s.include=t.checked;
     else if(c.contains("f-name")) s.name=t.value.trim();
+    const spread=spreadToSelected(s, t); syncCats();
+    if(spread){ afterEdit(true); toast(`Applied to ${sel.size} selected spaces`); return; }
     S.sample=false; persist(); renderProgram(id); $("sampleNote").hidden=true; refreshDerived();
   });
   tb.addEventListener("click", e=>{
     const tr=e.target.closest("tr[data-id]"); if(!tr) return; const id=tr.dataset.id, s=spaceById(id); if(!s) return;
     if(e.target.classList.contains("f-sel")){ setSelected(id, e.target.checked, e.shiftKey); return; }
-    const ib=e.target.closest(".icotog"); if(ib){ toggleIcon(s, ib.dataset.k); afterEdit(true); return; }
+    const ib=e.target.closest(".icotog"); if(ib){ toggleIcon(s, ib.dataset.k);
+      if(sel.has(id) && sel.size>1){ const k=ib.dataset.k, on=s.icons.includes(k); selectedSpaces().forEach(x=>{ x.icons = on ? ICON_KEYS.filter(y=>y===k||x.icons.includes(y)) : x.icons.filter(y=>y!==k); }); }
+      afterEdit(true); return; }
     if(e.target.closest(".f-del")){ S.spaces.splice(S.spaces.indexOf(s),1); delete S.adj.pos[id]; delete S.adj.pinned[id]; sel.delete(id); afterEdit(true); }
   });
 }
@@ -699,7 +723,6 @@ function renderProgram(keepTbl){
     cp.innerHTML = Object.keys(cats).length ? `<span class="lbl">Color group colors</span>`+Object.entries(cats).map(([k,c])=>`<label class="cat"><input type="color" data-k="${esc(k)}" value="${c.color}" aria-label="Color for ${esc(c.name)}">${esc(c.name)}</label>`).join("") : "";
     cp.querySelectorAll("input[type=color]").forEach(inp=>{ inp.addEventListener("input", e=>{ S.cats[e.target.dataset.k].color=e.target.value; persist(); refreshDerived(); }); inp.addEventListener("change", ()=>renderProgram()); });
   });
-  $("outlineChk").checked = S.outline;
   updateTotals();
   $("sampleNote").hidden = !S.sample;
   const unkCount = Object.keys(rel.unknown).length;
@@ -744,10 +767,9 @@ function startBlank(){
   persist(); restoreBlank(); renderAll(); $("qaName").focus(); toast("Blank program ready. Add your first space.");
 }
 bindBlank();
-$("outlineChk").addEventListener("change", e=>{ S.outline=e.target.checked; persist(); refreshDerived(); });
 function bindExample(){
   $("exBtn").onclick=()=>{
-    const go=()=>{ const d=defaultState(); Object.assign(S,{spaces:d.spaces, cats:d.cats, clusterCfg:d.clusterCfg, outline:d.outline, project:d.project, sample:true});
+    const go=()=>{ const d=defaultState(); Object.assign(S,{spaces:d.spaces, cats:d.cats, clusterCfg:d.clusterCfg, outline:d.outline, outlineStyle:d.outlineStyle, fillStyle:d.fillStyle, project:d.project, sample:true});
       S.adj.pos={}; S.adj.pinned={}; S.adj.hub=d.adj.hub; S.adj.clusterStyle="fill"; S.adj.clusterNames=false; S.adj.showClusters=true;
       $("projName").value=S.project; assignMissingColors(); persist(); restoreEx(); renderAll(); toast("Loaded the office example"); };
     if(!S.spaces.length || S.sample) return go();
@@ -921,12 +943,74 @@ function packAll(items, W, H, g){
   return best;
 }
 
+/* ---------- bubble art: clean, hand-drawn and watercolor ---------- */
+function syncStyleControls(){ document.querySelectorAll(".st-outline").forEach(el=>el.value=S.outlineStyle); document.querySelectorAll(".st-fill").forEach(el=>el.value=S.fillStyle); }
+function seedOf(id){ let h=2166136261; for(const ch of String(id)) { h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; }
+/* a slightly wobbly loop: radius varies with a few low harmonics */
+function wobble(cx,cy,R,seed,amp,opts={}){
+  const rnd=mulberry(seed); const H=[2,3,4,5,7].map(k=>({k, a:amp*(0.4+rnd()*0.6)/Math.sqrt(k), p:rnd()*Math.PI*2}));
+  const n=opts.n||72, start=(opts.start!=null?opts.start:rnd()*Math.PI*2), sweep=opts.sweep||Math.PI*2, dx=opts.dx||0, dy=opts.dy||0;
+  const pts=[]; for(let i=0;i<=n;i++){ const t=start+sweep*i/n; let f=1; H.forEach(h=>f+=h.a*Math.sin(h.k*t+h.p)); pts.push([cx+dx+R*f*Math.cos(t), cy+dy+R*f*Math.sin(t)]); }
+  return pts;
+}
+function mixHex(a,b,t){ const A=hexToRgb(a),B=hexToRgb(b); return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,"0")).join(""); }
+/* the shapes for one bubble, shared by screen and PDF */
+function bubbleArt(cx,cy,R,color,seed,lw){
+  const out=[];
+  if(S.fillStyle==="watercolor"){
+    const rnd=mulberry(seed^0x9e37);
+    const off=()=>(rnd()-0.5)*R*0.05;
+    const deep=mixHex(color,PAPER_INK,0.12);
+    out.push({pts:wobble(cx,cy,R*0.99,seed+1,0.035,{dx:off(),dy:off()}), fill:color, op:0.5, close:true});
+    out.push({pts:wobble(cx,cy,R*0.93,seed+2,0.06,{dx:off()*1.5,dy:off()*1.5}), fill:color, op:0.4, close:true});
+    out.push({pts:wobble(cx+R*(rnd()-0.5)*0.35,cy+R*(rnd()-0.5)*0.35,R*0.45,seed+3,0.12), fill:deep, op:0.18, close:true});
+    out.push({pts:wobble(cx+R*(rnd()-0.5)*0.4,cy+R*(rnd()-0.5)*0.4,R*0.32,seed+4,0.14), fill:deep, op:0.14, close:true});
+    out.push({pts:wobble(cx,cy,R*0.99,seed+1,0.035,{dx:0,dy:0}), stroke:mixHex(color,PAPER_INK,0.3), op:0.4, w:Math.max(lw*1.4,R*0.03), close:true, rim:true});
+  } else out.push({circle:true, cx, cy, r:R, fill:color, op:1});
+  if(S.outlineStyle==="clean") out.push({circle:true, cx, cy, r:R, stroke:PAPER_INK, w:lw, op:1});
+  if(S.outlineStyle==="sketch"){
+    const r2=mulberry(seed^0x5bd1);
+    out.push({pts:wobble(cx,cy,R,seed+11,0.014,{sweep:Math.PI*2+0.3+r2()*0.25}), stroke:PAPER_INK, w:lw*1.25, op:0.9});
+    out.push({pts:wobble(cx,cy,R*1.012,seed+12,0.02,{sweep:Math.PI*2-0.2+r2()*0.4}), stroke:PAPER_INK, w:lw*0.8, op:0.55});
+  }
+  return out;
+}
+const ptsD = pts => "M"+pts.map(p=>p[0].toFixed(3)+" "+p[1].toFixed(3)).join("L");
+function wcFilterDef(id, unit){
+  return `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="${(1.6/unit).toFixed(4)}" numOctaves="3" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${(unit*0.09).toFixed(4)}" xChannelSelector="R" yChannelSelector="G" result="d"/><feTurbulence type="fractalNoise" baseFrequency="${(3.2/unit).toFixed(4)}" numOctaves="3" seed="9" result="g"/><feColorMatrix in="g" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -0.75 1.25" result="ga"/><feComposite in="d" in2="ga" operator="in"/></filter>`;
+}
+function bubbleSVGStr(cx,cy,R,color,seed,lw,filterId){
+  const parts=bubbleArt(cx,cy,R,color,seed,lw); let fillG="", lineG="";
+  parts.forEach(p=>{
+    const geo = p.circle ? `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r}"` : `<path d="${ptsD(p.pts)}${p.close?"Z":""}"`;
+    const paint = p.fill ? `fill="${p.fill}" stroke="none"` : `fill="none" stroke="${p.stroke}" stroke-width="${p.w}" stroke-linecap="round" stroke-linejoin="round"`;
+    const el=`${geo} ${paint} opacity="${p.op}"/>`;
+    if(p.fill||p.rim) fillG+=el; else lineG+=el;
+  });
+  const wc = S.fillStyle==="watercolor" && filterId ? ` filter="url(#${filterId})"` : "";
+  return `<g${wc}>${fillG}</g>${lineG}`;
+}
+function bubblePDF(doc,cx,cy,R,color,seed,lw){
+  const parts=bubbleArt(cx,cy,R,color,seed,lw);
+  parts.forEach(p=>{
+    if(p.op<1) doc.setGState(new doc.GState({opacity:p.op}));
+    if(p.fill){ const c=hexToRgb(p.fill); doc.setFillColor(c[0],c[1],c[2]); }
+    if(p.stroke){ const c=hexToRgb(p.stroke); doc.setDrawColor(c[0],c[1],c[2]); doc.setLineWidth(p.w); doc.setLineCap("round"); doc.setLineJoin("round"); }
+    const style = p.fill ? "F" : "S";
+    if(p.circle) doc.circle(p.cx,p.cy,p.r,style);
+    else { const segs=[]; for(let i=1;i<p.pts.length;i++) segs.push([p.pts[i][0]-p.pts[i-1][0], p.pts[i][1]-p.pts[i-1][1]]); doc.lines(segs,p.pts[0][0],p.pts[0][1],[1,1],style,!!p.close); }
+    if(p.op<1) doc.setGState(new doc.GState({opacity:1}));
+  });
+  doc.setLineCap("butt"); doc.setLineJoin("miter");
+  const ink=hexToRgb(PAPER_INK); doc.setDrawColor(ink[0],ink[1],ink[2]);
+}
+
 /* ---------- sheets view ---------- */
 function sheetItems(){
   const sc=scaleObj().v;
   return validSpaces().filter(s=>s.include).map(s=>({id:s.id, name:s.name, sf:s.sf, note:s.note, color:colorOf(s), icons:s.icons, rft:radiusFt(s.sf), r:radiusFt(s.sf)*sc}));
 }
-function labelSpec(rIn){ const fs=Math.max(0.07, Math.min(0.2, rIn*0.26)); return {fs, chars:Math.max(4, Math.floor(1.75*rIn/(fs*0.52)))}; }
+function labelSpec(rIn){ const fs=Math.max(0.07, Math.min(0.2, rIn*0.26)); return {fs, chars:Math.max(4, Math.floor(1.75*rIn/(fs*0.6)))}; }
 function niceBarFt(sc, maxIn){
   const opts=[1,2,5,10,20,25,50,100,200,250,500];
   let pick=opts[0]; for(const f of opts){ if(f*sc<=maxIn) pick=f; } return pick;
@@ -944,6 +1028,7 @@ function renderChips(){
 function renderSheets(){
   const sh=S.sheet;
   $("paperSel").value=sh.paper; $("orientSel").value=sh.orient; $("marginIn").value=sh.margin; $("gapIn").value=sh.gap;
+  syncStyleControls();
   $("showSF").checked=sh.showSF; $("showDia").checked=sh.showDia; $("sheetIcons").checked=sh.showIcons; $("sheetLegend").checked=sh.legend;
   renderChips();
   const cb=contentBox(); const items=sheetItems();
@@ -970,20 +1055,22 @@ function sheetSVG(sheet, i, N, cb, pxW){
   let g=`<rect x="${cb.m}" y="${cb.m}" width="${cb.w}" height="${cb.h}" fill="none" stroke="#d8dcd8" stroke-width="0.015" stroke-dasharray="0.08 0.06"/>`;
   for(const p of sheet){
     const cx=cb.x+p.x, cy=cb.y+p.y, ink=inkFor(p.color);
-    g+=`<circle cx="${cx}" cy="${cy}" r="${p.r}" fill="${p.color}" stroke="${S.outline?PAPER_INK:"none"}" stroke-width="0.012"/>`;
+    g+=bubbleSVGStr(cx, cy, p.r, p.color, seedOf(p.id), 0.012, "wc"+i);
     g+=svgLabel(p, cx, cy, p.r, ink, S.sheet.showSF, S.sheet.showDia);
     if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.42); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>{ g+=iconBadgeSVG(p.icons[j], cx+q.x, cy+q.y, br); }); }
   }
   if(cb.lg){ const ly=cb.ph-cb.m-FOOTER-cb.lg/2+0.02, fs=0.1;
-    g+=`<text x="${cb.pw-cb.m}" y="${ly-0.2}" font-size="0.075" text-anchor="end" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}" letter-spacing="0.01">LEGEND</text>`;
-    legendLayout(sheetLegendItems(), cb.pw-cb.m, fs, LEG_BR).forEach(it=>{ g+=(it.k?iconBadgeSVG(it.k, it.bx, ly, LEG_BR):`<circle cx="${it.bx}" cy="${ly}" r="${LEG_BR}" fill="${it.color}"/>`)+`<text x="${it.tx}" y="${ly}" font-size="${fs}" dominant-baseline="central" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}">${esc(it.label)}</text>`; }); }
+    g+=`<text x="${cb.pw-cb.m}" y="${ly-0.2}" font-size="0.075" text-anchor="end" font-family="Lexend, Arial" fill="${PAPER_INK}" letter-spacing="0.01">LEGEND</text>`;
+    legendLayout(sheetLegendItems(), cb.pw-cb.m, fs, LEG_BR).forEach(it=>{ g+=(it.k?iconBadgeSVG(it.k, it.bx, ly, LEG_BR):`<circle cx="${it.bx}" cy="${ly}" r="${LEG_BR}" fill="${it.color}"/>`)+`<text x="${it.tx}" y="${ly}" font-size="${fs}" dominant-baseline="central" font-family="Lexend, Arial" fill="${PAPER_INK}">${esc(it.label)}</text>`; }); }
   // footer
   const fy = cb.ph - cb.m - 0.12;
   g+=`<line x1="${cb.m}" x2="${cb.pw-cb.m}" y1="${cb.ph-cb.m-FOOTER+0.05}" y2="${cb.ph-cb.m-FOOTER+0.05}" stroke="${PAPER_INK}" stroke-width="0.01"/>`;
-  g+=`<text x="${cb.m}" y="${fy}" font-size="0.12" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}" font-weight="600">${esc(S.project||"Project")}  ·  Program bubbles  ·  ${esc(sc.label)}</text>`;
-  g+=`<text x="${cb.pw-cb.m}" y="${fy}" font-size="0.12" text-anchor="end" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}">Sheet ${i+1} of ${N}</text>`;
+  g+=`<text x="${cb.m}" y="${fy}" font-size="0.12" font-family="Lexend, Arial" fill="${PAPER_INK}" font-weight="600">${esc(S.project||"Project")}  ·  Program bubbles  ·  ${esc(sc.label)}</text>`;
+  g+=`<text x="${cb.pw-cb.m}" y="${fy}" font-size="0.12" text-anchor="end" font-family="Lexend, Arial" fill="${PAPER_INK}">Sheet ${i+1} of ${N}</text>`;
   g+=scaleBarSVG(cb.pw/2 - 0.9, fy-0.08, sc.v);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cb.pw} ${cb.ph}" width="${pxW}" height="${pxW*cb.ph/cb.pw}">${g}</svg>`;
+  const unit = sheet.length ? sheet.reduce((a,p)=>a+p.r,0)/sheet.length : 1;
+  const defs = S.fillStyle==="watercolor" ? `<defs>${wcFilterDef("wc"+i, unit)}</defs>` : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cb.pw} ${cb.ph}" width="${pxW}" height="${pxW*cb.ph/cb.pw}">${defs}${g}</svg>`;
 }
 function svgLabel(p, cx, cy, r, ink, showSF, showDia){
   const {fs, chars}=labelSpec(r);
@@ -991,14 +1078,14 @@ function svgLabel(p, cx, cy, r, ink, showSF, showDia){
   const extra=[]; if(showSF) extra.push(fmt(p.sf)+" SF"); if(showDia) extra.push("Ø "+(2*p.rft).toFixed(1)+"'"); if(p.note) extra.push(p.note);
   const lh=fs*1.12, total=lines.length+extra.length;
   let y=cy-(total-1)*lh/2; let t="";
-  lines.forEach(l=>{ t+=`<text x="${cx}" y="${y}" font-size="${fs}" text-anchor="middle" dominant-baseline="central" font-family="Barlow Semi Condensed, Arial" font-weight="700" fill="${ink}">${esc(l)}</text>`; y+=lh; });
-  extra.forEach(l=>{ t+=`<text x="${cx}" y="${y}" font-size="${fs*0.82}" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono, monospace" fill="${ink}">${esc(l)}</text>`; y+=lh; });
+  lines.forEach(l=>{ t+=`<text x="${cx}" y="${y}" font-size="${fs}" text-anchor="middle" dominant-baseline="central" font-family="Lexend, Arial" font-weight="700" fill="${ink}">${esc(l)}</text>`; y+=lh; });
+  extra.forEach(l=>{ t+=`<text x="${cx}" y="${y}" font-size="${fs*0.82}" text-anchor="middle" dominant-baseline="central" font-family="Lexend, Arial" fill="${ink}">${esc(l)}</text>`; y+=lh; });
   return t;
 }
 function scaleBarSVG(x, y, sc){
   const ft=niceBarFt(sc, 1.8); const L=ft*sc; let s="";
   for(let k=0;k<4;k++) s+=`<rect x="${x+k*L/4}" y="${y}" width="${L/4}" height="0.05" fill="${k%2?"#fff":PAPER_INK}" stroke="${PAPER_INK}" stroke-width="0.008"/>`;
-  s+=`<text x="${x}" y="${y+0.14}" font-size="0.08" font-family="IBM Plex Mono, monospace" fill="${PAPER_INK}">0</text><text x="${x+L}" y="${y+0.14}" font-size="0.08" text-anchor="end" font-family="IBM Plex Mono, monospace" fill="${PAPER_INK}">${ft}'</text>`;
+  s+=`<text x="${x}" y="${y+0.14}" font-size="0.08" font-family="Lexend, Arial" fill="${PAPER_INK}">0</text><text x="${x+L}" y="${y+0.14}" font-size="0.08" text-anchor="end" font-family="Lexend, Arial" fill="${PAPER_INK}">${ft}'</text>`;
   return s;
 }
 ["paperSel","orientSel"].forEach(id=>$(id).addEventListener("change", e=>{ S.sheet[id==="paperSel"?"paper":"orient"]=e.target.value; persist(); renderSheets(); }));
@@ -1057,7 +1144,7 @@ $("pdfSheets").addEventListener("click", ()=>{
     doc.setLineWidth(0.012);
     for(const p of sheet){
       const [r,g,b]=hexToRgb(p.color); doc.setFillColor(r,g,b); const ink=hexToRgb(PAPER_INK); doc.setDrawColor(ink[0],ink[1],ink[2]); doc.setLineWidth(0.012);
-      doc.circle(cb.x+p.x, cb.y+p.y, p.r, S.outline?"FD":"F");
+      bubblePDF(doc, cb.x+p.x, cb.y+p.y, p.r, p.color, seedOf(p.id), 0.012);
       pdfLabel(doc, p, cb.x+p.x, cb.y+p.y, p.r, S.sheet.showSF, S.sheet.showDia);
       if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.42); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>iconPDF(doc, p.icons[j], cb.x+p.x+q.x, cb.y+p.y+q.y, br)); }
     }
@@ -1262,7 +1349,7 @@ function renderAdj(refit){
   $("showDirect").checked=S.adj.showDirect; $("showClose").checked=S.adj.showClose; $("adjSF").checked=S.adj.showSF;
   $("keepPinned").checked=S.adj.keepPinned; $("fitSheet").checked=S.adj.fit;
   $("adjIcons").checked=S.adj.showIcons; $("adjClusters").checked=S.adj.showClusters; $("adjLegendChk").checked=S.adj.legend;
-  $("adjOutline").checked=S.outline; $("clStyle").value=S.adj.clusterStyle; $("clFill").value=S.adj.clusterFill; $("clNames").checked=S.adj.clusterNames;
+  syncStyleControls(); $("clStyle").value=S.adj.clusterStyle; $("clFill").value=S.adj.clusterFill; $("clNames").checked=S.adj.clusterNames;
   const hs=$("hubSel"), seenN={};
   hs.innerHTML=`<option value="">Choose a space…</option>`+nodes.slice().sort((a,b)=>b.sf-a.sf).map(n=>{ seenN[n.name]=(seenN[n.name]||0)+1; return `<option value="${n.id}">${esc(n.name)}${seenN[n.name]>1?" ("+seenN[n.name]+")":""}</option>`; }).join("");
   hs.value = nodes.some(n=>n.id===S.adj.hub) ? S.adj.hub : "";
@@ -1278,7 +1365,8 @@ function renderAdj(refit){
   adjSvg.innerHTML="";
   const avgR = nodes.length? nodes.reduce((a,n)=>a+n.rft,0)/nodes.length : 10;
   const gH=document.createElementNS(svgNS,"g"), gL=document.createElementNS(svgNS,"g"), gN=document.createElementNS(svgNS,"g");
-  adjSvg.append(gH,gL,gN);
+  const defs=document.createElementNS(svgNS,"defs"); defs.innerHTML=wcFilterDef("wcAdj", avgR);
+  adjSvg.append(defs,gH,gL,gN);
   lineEls=[]; nodeEls={}; hullEls=[];
   const byId={}; nodes.forEach(n=>byId[n.id]=n);
   const groups=clusterGroups();
@@ -1290,7 +1378,7 @@ function renderAdj(refit){
     path.setAttribute("stroke-dasharray",`${avgR*0.05} ${avgR*0.09}`); path.setAttribute("stroke-linecap","round"); path.setAttribute("pointer-events","none");
     if(cst==="fill") path.setAttribute("display","none");
     const label=document.createElementNS(svgNS,"text"); if(!S.adj.clusterNames) label.setAttribute("display","none");
-    label.setAttribute("font-size",avgR*0.22); label.setAttribute("text-anchor","middle"); label.setAttribute("font-family","Barlow Semi Condensed, Arial"); label.setAttribute("font-weight","700");
+    label.setAttribute("font-size",avgR*0.22); label.setAttribute("text-anchor","middle"); label.setAttribute("font-family","Lexend, Arial"); label.setAttribute("font-weight","700");
     label.setAttribute("fill",PAPER_INK); label.setAttribute("letter-spacing",avgR*0.01); label.setAttribute("pointer-events","none"); label.textContent=gr.name.toUpperCase();
     gH.append(blob,path,label); hullEls.push({key, ids:gr.ids, blob, path, label, pad:clPad, lift:avgR*0.12});
   });
@@ -1310,14 +1398,15 @@ function renderAdj(refit){
   });
   nodes.forEach(n=>{
     const g=document.createElementNS(svgNS,"g"); g.setAttribute("class","node"); g.dataset.id=n.id;
-    const c=document.createElementNS(svgNS,"circle"); c.setAttribute("r",n.rft); c.setAttribute("fill",n.color); c.setAttribute("stroke",S.outline?PAPER_INK:"none"); c.setAttribute("stroke-width",avgR*0.025);
+    const art=document.createElementNS(svgNS,"g"); art.setAttribute("pointer-events","none"); art.innerHTML=bubbleSVGStr(0,0,n.rft,n.color,seedOf(n.id),avgR*0.025,"wcAdj"); g.appendChild(art);
+    const c=document.createElementNS(svgNS,"circle"); c.setAttribute("r",n.rft); c.setAttribute("fill","transparent"); c.setAttribute("stroke","none"); c.setAttribute("stroke-width",avgR*0.025);
     g.appendChild(c);
     const fs=Math.max(avgR*0.13, Math.min(n.rft*0.26, avgR*0.32));
-    const chars=Math.max(4,Math.floor(1.75*n.rft/(fs*0.52)));
+    const chars=Math.max(4,Math.floor(1.75*n.rft/(fs*0.6)));
     const lines=wrapText(n.name,chars,3); const ex=S.adj.showSF?[fmt(n.sf)+" SF"]:[]; if(n.note) ex.push(n.note);
     const lh=fs*1.12; let y=-(lines.length+ex.length-1)*lh/2; const ink=inkFor(n.color);
-    lines.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","Barlow Semi Condensed, Arial"); t.setAttribute("font-weight","700"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
-    ex.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs*0.8); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","IBM Plex Mono, monospace"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
+    lines.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","Lexend, Arial"); t.setAttribute("font-weight","700"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
+    ex.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs*0.8); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","Lexend, Arial"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
     const pin=document.createElementNS(svgNS,"circle"); pin.setAttribute("r",avgR*0.07); pin.setAttribute("fill",PAPER_INK); pin.setAttribute("class","pin"); pin.setAttribute("pointer-events","none");
     g.appendChild(pin);
     if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.27, n.rft*0.45); const ig=document.createElementNS(svgNS,"g"); ig.setAttribute("pointer-events","none");
@@ -1494,7 +1583,8 @@ $("hubBtn").addEventListener("click", ()=>{
 $("clStyle").addEventListener("change", e=>{ S.adj.clusterStyle=e.target.value; persist(); renderAdj(false); });
 $("clFill").addEventListener("input", e=>{ S.adj.clusterFill=e.target.value; persist(); renderAdj(false); });
 $("clNames").addEventListener("change", e=>{ S.adj.clusterNames=e.target.checked; persist(); renderAdj(false); });
-$("adjOutline").addEventListener("change", e=>{ S.outline=e.target.checked; persist(); renderAdj(false); });
+document.querySelectorAll(".st-outline").forEach(el=>el.addEventListener("change", e=>{ S.outlineStyle=e.target.value; persist(); syncStyleControls(); refreshDerived(); }));
+document.querySelectorAll(".st-fill").forEach(el=>el.addEventListener("change", e=>{ S.fillStyle=e.target.value; persist(); syncStyleControls(); refreshDerived(); }));
 $("adjIcons").addEventListener("change", e=>{ S.adj.showIcons=e.target.checked; persist(); renderAdj(false); });
 $("adjClusters").addEventListener("change", e=>{ S.adj.showClusters=e.target.checked; persist(); renderAdj(false); });
 $("adjLegendChk").addEventListener("change", e=>{ S.adj.legend=e.target.checked; persist(); renderAdj(false); });
@@ -1564,7 +1654,7 @@ $("pdfAdj").addEventListener("click", ()=>{
     doc.line(X(sg.x1),Y(sg.y1),X(sg.x2),Y(sg.y2));
   });
   doc.setLineDashPattern([],0);
-  nodes.forEach(n=>{ const p=S.adj.pos[n.id]; const [r,g,b]=hexToRgb(n.color); doc.setFillColor(r,g,b); doc.setLineWidth(0.012); doc.circle(X(p.x),Y(p.y),n.rft*s,S.outline?"FD":"F");
+  nodes.forEach(n=>{ const p=S.adj.pos[n.id]; const [r,g,b]=hexToRgb(n.color); bubblePDF(doc, X(p.x), Y(p.y), n.rft*s, n.color, seedOf(n.id), 0.012);
     pdfLabel(doc,{name:n.name,sf:n.sf,note:n.note,color:n.color,rft:n.rft},X(p.x),Y(p.y),n.rft*s,S.adj.showSF,false);
     if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.27, n.rft*0.45)*s; badgeSpots(n.icons.length, n.rft*s, br, 0).forEach((q,j)=>iconPDF(doc, n.icons[j], X(p.x)+q.x, Y(p.y)+q.y, br)); }
     doc.setDrawColor(ink[0],ink[1],ink[2]); });
