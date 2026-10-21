@@ -114,9 +114,9 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
 .catpanel input[type=color]{width:30px;height:26px;border:1px solid var(--line);border-radius:4px;padding:0;background:none;cursor:pointer}
 .cl-row{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:6px;align-items:center;font-size:14px}
 .cl-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.adjlegend{position:absolute;right:12px;bottom:12px;background:var(--paper);color:var(--paper-ink);border:1px solid var(--paper-line);padding:7px 10px;font-size:12.5px;display:grid;gap:5px;pointer-events:none}
+.adjlegend{position:absolute;right:12px;bottom:12px;background:var(--paper);color:var(--paper-ink);border:1px solid var(--paper-line);padding:8px 12px;font-size:13.5px;display:grid;gap:5px;pointer-events:none}
 .adjlegend div{display:flex;align-items:center;gap:7px}
-.adjlegend svg{width:18px;height:18px;flex:none}
+.adjlegend svg{width:24px;height:24px;flex:none}
 .seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
 #adjSvg.linking .node{cursor:crosshair}
 #adjSvg .hit{cursor:pointer}
@@ -202,7 +202,7 @@ table.prog tfoot td{font-weight:600;border-bottom:0;padding:9px 8px}
           <label class="inl"><input type="checkbox" id="showSF"> Show square footage</label>
           <label class="inl"><input type="checkbox" id="showDia"> Show diameter in feet</label>
           <label class="inl"><input type="checkbox" id="sheetIcons"> Show icons</label>
-          <label class="inl"><input type="checkbox" id="sheetLegend"> Icon legend (bottom right)</label>
+          <label class="inl"><input type="checkbox" id="sheetLegend"> Legend (bottom right)</label>
         </div>
         <div class="grp">
           <div class="row" style="justify-content:space-between"><span class="lbl">Spaces to print</span><span class="row" style="gap:4px"><button class="btn small" id="selAll">All</button><button class="btn small" id="selNone">None</button></span></div>
@@ -372,8 +372,8 @@ function iconPDF(doc, key, cx, cy, r){
   });
 }
 /* badge centers just inside the perimeter, spread around the upper right */
-function badgeSpots(n, R, br){
-  const step=Math.max(0.42, 2.3*br/Math.max(R,1e-6)); const mid=-Math.PI/3; const rr=R-br*0.35;
+function badgeSpots(n, R, br, inset){
+  const rr=R-br*(inset==null?0.5:inset); const step=Math.max(0.42, 2.3*br/Math.max(rr,1e-6)); const mid=-Math.PI/3;
   return Array.from({length:n},(_,i)=>{ const a=mid+(i-(n-1)/2)*step; return {x:rr*Math.cos(a), y:rr*Math.sin(a)}; });
 }
 function parseIcons(v){
@@ -398,7 +398,7 @@ function defaultState(){
   const hub = spaces.find(x=>x.name==="Open Office");
   return {project:"Sample: Office Suite", sample:true, scale:"1/8", spaces, cats:JSON.parse(JSON.stringify(SAMPLE_CATS)), clusterCfg:JSON.parse(JSON.stringify(SAMPLE_CLUSTERS)), outline:false,
     sheet:{paper:"11x17", orient:"portrait", margin:0.5, gap:0.125, showSF:true, showDia:false, showIcons:true, legend:true},
-    adj:{pos:{}, pinned:{}, keepPinned:true, showDirect:true, showClose:true, showSF:true, fit:true, seed:1, showIcons:false, showClusters:true, legend:true, clusterStyle:"fill", clusterFill:"#E4E4E4", clusterNames:false, hub:hub?hub.id:""},
+    adj:{pos:{}, pinned:{}, keepPinned:true, showDirect:true, showClose:true, showSF:true, fit:true, seed:1, showIcons:true, showClusters:true, legend:true, clusterStyle:"fill", clusterFill:"#E4E4E4", clusterNames:false, hub:hub?hub.id:""},
     tab:"program"};
 }
 function load(){
@@ -410,6 +410,7 @@ function persist(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStor
 S = load();
 S.spaces.forEach(s=>{ s.icons = Array.isArray(s.icons)? s.icons.filter(k=>ICON_KEYS.includes(k)) : []; s.cluster = s.cluster||""; s.category=s.category||""; s.note=s.note||""; });
 S.cats = S.cats||{}; S.clusterCfg = S.clusterCfg||{}; if(typeof S.outline!=="boolean") S.outline=true;
+if(!S.iconsV2){ S.adj.showIcons=true; S.sheet.showIcons=true; S.iconsV2=true; }
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
@@ -756,7 +757,7 @@ function paperDims(){
   return S.sheet.orient==="portrait" ? {w:short,h:long} : {w:long,h:short};
 }
 const FOOTER = 0.35; // inches reserved inside bottom margin area for title strip
-const LEGEND_ROW = 0.3, BADGE_IN = 0.1;
+const LEGEND_ROW = 0.36, BADGE_IN = 0.16, LEG_BR = 0.1;
 function legendItems(list, withIcons){
   const items=Object.values(usedCats(list)).map(c=>({color:c.color, label:c.name}));
   if(withIcons){ const used=new Set(); list.forEach(s=>s.icons.forEach(k=>used.add(k))); ICON_KEYS.filter(k=>used.has(k)).forEach(k=>items.push({k, label:ICON_LABEL[k]})); }
@@ -878,11 +879,11 @@ function sheetSVG(sheet, i, N, cb, pxW){
     const cx=cb.x+p.x, cy=cb.y+p.y, ink=inkFor(p.color);
     g+=`<circle cx="${cx}" cy="${cy}" r="${p.r}" fill="${p.color}" stroke="${S.outline?PAPER_INK:"none"}" stroke-width="0.012"/>`;
     g+=svgLabel(p, cx, cy, p.r, ink, S.sheet.showSF, S.sheet.showDia);
-    if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.3); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>{ g+=iconBadgeSVG(p.icons[j], cx+q.x, cy+q.y, br); }); }
+    if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.42); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>{ g+=iconBadgeSVG(p.icons[j], cx+q.x, cy+q.y, br); }); }
   }
   if(cb.lg){ const ly=cb.ph-cb.m-FOOTER-cb.lg/2+0.02, fs=0.1;
-    g+=`<text x="${cb.pw-cb.m}" y="${ly-0.17}" font-size="0.075" text-anchor="end" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}" letter-spacing="0.01">LEGEND</text>`;
-    legendLayout(sheetLegendItems(), cb.pw-cb.m, fs, 0.075).forEach(it=>{ g+=(it.k?iconBadgeSVG(it.k, it.bx, ly, 0.075):`<circle cx="${it.bx}" cy="${ly}" r="0.075" fill="${it.color}"/>`)+`<text x="${it.tx}" y="${ly}" font-size="${fs}" dominant-baseline="central" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}">${esc(it.label)}</text>`; }); }
+    g+=`<text x="${cb.pw-cb.m}" y="${ly-0.2}" font-size="0.075" text-anchor="end" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}" letter-spacing="0.01">LEGEND</text>`;
+    legendLayout(sheetLegendItems(), cb.pw-cb.m, fs, LEG_BR).forEach(it=>{ g+=(it.k?iconBadgeSVG(it.k, it.bx, ly, LEG_BR):`<circle cx="${it.bx}" cy="${ly}" r="${LEG_BR}" fill="${it.color}"/>`)+`<text x="${it.tx}" y="${ly}" font-size="${fs}" dominant-baseline="central" font-family="Barlow Semi Condensed, Arial" fill="${PAPER_INK}">${esc(it.label)}</text>`; }); }
   // footer
   const fy = cb.ph - cb.m - 0.12;
   g+=`<line x1="${cb.m}" x2="${cb.pw-cb.m}" y1="${cb.ph-cb.m-FOOTER+0.05}" y2="${cb.ph-cb.m-FOOTER+0.05}" stroke="${PAPER_INK}" stroke-width="0.01"/>`;
@@ -947,9 +948,9 @@ function pdfFooter(doc, cb, title, right, sc, notToScale){
 }
 function pdfIconLegend(doc, list, xRight, y){
   const ink=hexToRgb(PAPER_INK), fs=0.1;
-  doc.setTextColor(ink[0],ink[1],ink[2]); doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.text("LEGEND", xRight, y-0.17, {align:"right", baseline:"middle"});
+  doc.setTextColor(ink[0],ink[1],ink[2]); doc.setFont("helvetica","bold"); doc.setFontSize(5.5); doc.text("LEGEND", xRight, y-0.2, {align:"right", baseline:"middle"});
   doc.setFont("helvetica","normal"); doc.setFontSize(fs*72);
-  legendLayout(list, xRight, fs, 0.075).forEach(it=>{ if(it.k) iconPDF(doc, it.k, it.bx, y, 0.075); else { const c=hexToRgb(it.color); doc.setFillColor(c[0],c[1],c[2]); doc.circle(it.bx, y, 0.075, "F"); }
+  legendLayout(list, xRight, fs, LEG_BR).forEach(it=>{ if(it.k) iconPDF(doc, it.k, it.bx, y, LEG_BR); else { const c=hexToRgb(it.color); doc.setFillColor(c[0],c[1],c[2]); doc.circle(it.bx, y, LEG_BR, "F"); }
     doc.setTextColor(ink[0],ink[1],ink[2]); doc.setFont("helvetica","normal"); doc.setFontSize(fs*72); doc.text(it.label, it.tx, y, {baseline:"middle"}); });
 }
 $("pdfSheets").addEventListener("click", ()=>{
@@ -965,7 +966,7 @@ $("pdfSheets").addEventListener("click", ()=>{
       const [r,g,b]=hexToRgb(p.color); doc.setFillColor(r,g,b); const ink=hexToRgb(PAPER_INK); doc.setDrawColor(ink[0],ink[1],ink[2]); doc.setLineWidth(0.012);
       doc.circle(cb.x+p.x, cb.y+p.y, p.r, S.outline?"FD":"F");
       pdfLabel(doc, p, cb.x+p.x, cb.y+p.y, p.r, S.sheet.showSF, S.sheet.showDia);
-      if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.3); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>iconPDF(doc, p.icons[j], cb.x+p.x+q.x, cb.y+p.y+q.y, br)); }
+      if(S.sheet.showIcons && p.icons.length){ const br=Math.min(BADGE_IN, p.r*0.42); badgeSpots(p.icons.length, p.r, br).forEach((q,j)=>iconPDF(doc, p.icons[j], cb.x+p.x+q.x, cb.y+p.y+q.y, br)); }
     }
     if(cb.lg) pdfIconLegend(doc, sheetLegendItems(), cb.pw-cb.m, cb.ph-cb.m-FOOTER-cb.lg/2+0.02);
     pdfFooter(doc, cb, `${S.project||"Project"}  -  Program bubbles  -  Scale ${sc.label}`, `Sheet ${i+1} of ${N}`, sc.v, false);
@@ -1226,8 +1227,8 @@ function renderAdj(refit){
     ex.forEach(l=>{ const t=document.createElementNS(svgNS,"text"); t.setAttribute("y",y); t.setAttribute("font-size",fs*0.8); t.setAttribute("text-anchor","middle"); t.setAttribute("dominant-baseline","central"); t.setAttribute("font-family","IBM Plex Mono, monospace"); t.setAttribute("fill",ink); t.setAttribute("pointer-events","none"); t.textContent=l; g.appendChild(t); y+=lh; });
     const pin=document.createElementNS(svgNS,"circle"); pin.setAttribute("r",avgR*0.07); pin.setAttribute("fill",PAPER_INK); pin.setAttribute("class","pin"); pin.setAttribute("pointer-events","none");
     g.appendChild(pin);
-    if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.16, n.rft*0.34); const ig=document.createElementNS(svgNS,"g"); ig.setAttribute("pointer-events","none");
-      ig.innerHTML = badgeSpots(n.icons.length, n.rft, br).map((q,j)=>iconBadgeSVG(n.icons[j], q.x, q.y, br)).join(""); g.appendChild(ig); }
+    if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.27, n.rft*0.45); const ig=document.createElementNS(svgNS,"g"); ig.setAttribute("pointer-events","none");
+      ig.innerHTML = badgeSpots(n.icons.length, n.rft, br, 0).map((q,j)=>iconBadgeSVG(n.icons[j], q.x, q.y, br)).join(""); g.appendChild(ig); }
     if(linkFrom===n.id){ c.setAttribute("stroke","#1f6b64"); c.setAttribute("stroke-width",avgR*0.12); }
     gN.appendChild(g); nodeEls[n.id]={g, pin, n};
     g.addEventListener("pointerdown", ev=>{ if(linkMode==="move") startDrag(ev); else { ev.preventDefault(); ev.stopPropagation(); onNodeLink(n.id); } });
@@ -1472,7 +1473,7 @@ $("pdfAdj").addEventListener("click", ()=>{
   doc.setLineDashPattern([],0);
   nodes.forEach(n=>{ const p=S.adj.pos[n.id]; const [r,g,b]=hexToRgb(n.color); doc.setFillColor(r,g,b); doc.setLineWidth(0.012); doc.circle(X(p.x),Y(p.y),n.rft*s,S.outline?"FD":"F");
     pdfLabel(doc,{name:n.name,sf:n.sf,note:n.note,color:n.color,rft:n.rft},X(p.x),Y(p.y),n.rft*s,S.adj.showSF,false);
-    if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.16, n.rft*0.34)*s; badgeSpots(n.icons.length, n.rft*s, br).forEach((q,j)=>iconPDF(doc, n.icons[j], X(p.x)+q.x, Y(p.y)+q.y, br)); }
+    if(S.adj.showIcons && n.icons.length){ const br=Math.min(avgR*0.27, n.rft*0.45)*s; badgeSpots(n.icons.length, n.rft*s, br, 0).forEach((q,j)=>iconPDF(doc, n.icons[j], X(p.x)+q.x, Y(p.y)+q.y, br)); }
     doc.setDrawColor(ink[0],ink[1],ink[2]); });
   // legend
   const ly=cb.ph-cb.m-FOOTER-0.15; doc.setTextColor(ink[0],ink[1],ink[2]); doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
