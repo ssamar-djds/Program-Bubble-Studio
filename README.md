@@ -2,22 +2,25 @@
 
 A browser tool for turning an architectural space program into to-scale bubble diagrams, packed print sheets, and an adjacency diagram.
 
-Open `index.html` in any modern browser — no install or build step.
+Open `index.html` in any modern browser — no install or build step. Click "Load office example" to see a finished diagram.
 
 ## What it does
 
-- **Program** – Load a program from Excel/CSV, or type spaces in directly. Edit names, square footage, colors, and relationships in a table, and export the program back to Excel.
+- **Program** – Load a program from Excel/CSV, or type spaces in directly (with a quantity for repeated rooms). Edit names, square footage, relationships, icons, clusters, categories and notes in a table, and export the program back to Excel.
 - **Bubbles & print sheets** – Each bubble's area equals the space's square footage, drawn at a chosen architectural or engineering scale (1/32" to 1/4" = 1'-0", 1" = 10' to 1" = 100'). Bubbles are packed tightly onto 11×17 (or other) sheets to use as little paper as possible. Download as a to-scale PDF with a scale bar on every sheet — print at **Actual size / 100%**.
-- **Adjacency diagram** – Solid lines for direct access, dashed lines for close-to. Auto-arranges bubbles so related spaces sit together with few crossing lines. Drag bubbles, and connect or disconnect spaces by clicking; changes update the program table. Download as PDF, to scale or fitted to the sheet.
+- **Adjacency diagram** – Solid lines for direct access, dashed lines for close-to. Arrange automatically, or around a hub space with its connections spread evenly. Drag bubbles, connect or disconnect spaces by clicking, and add icons or cluster membership by clicking; changes update the program table. Download as PDF, to scale or fitted to the sheet.
+- **Clusters** – Group repeated or related spaces. Shown as a soft filled shape, a dotted outline, or both; set a grid (rows × columns) per cluster. Link a space to a cluster's name to draw one line to the whole group.
+- **Categories** – Color spaces by category (e.g. Work, Support, Building), with one editable color per category.
+- **Icons** – Acoustic, Privacy, Nature and Sunlight markers on the edge of each bubble, with a legend in the bottom-right corner.
 
 ## Excel format
 
-| Space Name | Square Feet | Direct Access | Close To |
-|---|---|---|---|
-| Lobby | 600 | Community Room | Offices |
-| Community Room | 1800 | Lobby, Kitchen | Storage |
+| Space Name | Square Feet | Direct Access | Close To | Icons | Cluster | Category | Notes | Quantity |
+|---|---|---|---|---|---|---|---|---|
+| Open Office | 1500 | Private Offices, Med. Meeting Rm | | Sunlight | | Work | (10 ppl) | 1 |
+| Private Office | 150 | | | Privacy | Private Offices | Work | | 10 |
 
-List related spaces by name, separated by commas. A blank template can be downloaded from the Program tab.
+Only the first two columns are required. List related spaces (or cluster names) separated by commas. A filled-in template can be downloaded from the Program tab.
 
 ## Notes
 
