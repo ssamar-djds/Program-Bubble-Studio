@@ -24,6 +24,7 @@
   --f-mono:"Lexend",Arial,Helvetica,sans-serif;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.4}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px;max-width:1500px;margin:0 auto}
 header.tb{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;border:1.5px solid var(--ink);background:var(--panel)}
@@ -62,7 +63,23 @@ table.prog tr.sel td{background:var(--accent-soft)}
 .bulkbar input[type=text],.bulkbar input[type=number]{width:120px}
 .bulkbar .grp{display:flex;gap:6px;align-items:center}
 .bulkbar + .tablewrap{margin-top:0}
-.adjtable{margin-top:26px}
+.adjtable{margin-top:14px}
+.adjtable .lbl{margin-bottom:2px}
+.adjtable table.prog{min-width:1110px;font-size:13px;table-layout:fixed}
+.adjtable table.prog th:nth-child(1){width:30px!important}.adjtable table.prog th:nth-child(2){width:40px!important}.adjtable table.prog th:nth-child(3){width:150px!important}
+.adjtable table.prog th:nth-child(4){width:62px!important}.adjtable table.prog th:nth-child(5){width:200px!important}.adjtable table.prog th:nth-child(6){width:160px!important}
+.adjtable table.prog th:nth-child(7){width:112px!important}.adjtable table.prog th:nth-child(8){width:110px!important}.adjtable table.prog th:nth-child(9){width:95px!important}
+.adjtable table.prog th:nth-child(10){width:85px!important}.adjtable table.prog th:nth-child(11){width:40px!important}.adjtable table.prog th:nth-child(12){width:28px!important}
+.adjtable table.prog th{font-size:10px;padding:6px 6px}
+.adjtable table.prog td{padding:2px 4px}
+.adjtable table.prog input[type=text],.adjtable table.prog input[type=number]{font-size:13px;padding:3px 6px}
+.adjtable table.prog td.num input{font-size:12px}
+.adjtable .icotog{width:24px;height:24px;padding:2px}
+.adjtable .icotog svg{width:17px;height:17px}
+.adjtable table.prog input[type=color]{width:28px;height:22px}
+.adjtable .bulkbar{font-size:13px;padding:8px 10px}
+.adjtable .tablewrap{max-height:46vh;overflow:auto}
+.adjtable table.prog thead th{position:sticky;top:0;background:var(--panel);z-index:1}
 table.prog th{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);text-align:left;padding:8px 8px;border-bottom:1.5px solid var(--ink);font-weight:600;white-space:nowrap}
 table.prog td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top}
 table.prog td input[type=text],table.prog td input[type=number]{width:100%;border-color:transparent;background:transparent}
@@ -93,7 +110,7 @@ body,button,input,select{font-family:var(--f-ui)}
 .sheetcard .cap{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
 .stats{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:14px;margin-bottom:12px}
 .stats b{font-family:var(--f-mono);font-weight:500}
-#adjSvg{background:var(--paper);display:block;width:100%;height:68vh;min-height:380px;touch-action:none;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+#adjSvg{background:var(--paper);display:block;width:100%;height:58vh;min-height:360px;touch-action:none;border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.06)}
 #adjSvg .node{cursor:grab}
 #adjSvg .node.dragging{cursor:grabbing}
 .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--muted);margin-top:8px;align-items:center}
@@ -298,13 +315,12 @@ body,button,input,select{font-family:var(--f-ui)}
           <span><svg width="14" height="14"><circle cx="7" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="1.6" fill="currentColor"/></svg> Dragged (held in place)</span>
           <span>Shift-click a bubble to select it in the table</span>
         </div>
+        <div class="adjtable">
+          <div class="hint" style="font-size:13px;max-width:none"><span class="lbl" style="margin-right:8px">Program table</span>Edits update the diagram as you type. Tick rows to change several at once.</div>
+          <div id="tblAdj" data-tbl="tblAdj"></div>
+          <div class="catpanel"></div>
+        </div>
       </div>
-    </div>
-    <div class="adjtable">
-      <div class="lbl">Program table</div>
-      <p class="hint" style="margin:4px 0 0">Edit here and the diagram above updates as you type. Tick several rows, then change any of them (or use the green bar) to change them all at once.</p>
-      <div id="tblAdj" data-tbl="tblAdj"></div>
-      <div class="catpanel"></div>
     </div>
   </section>
 </div>
