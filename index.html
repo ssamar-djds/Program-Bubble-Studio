@@ -36,6 +36,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15p
 header.tb{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;border:1.5px solid var(--ink);background:var(--panel)}
 header.tb .cell{padding:8px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
 header.tb .cell+.cell{border-left:1px solid var(--line)}
+header.tb .cell.grow{flex:1 1 220px}
 header.tb .brand{font-weight:700;font-size:20px;letter-spacing:.01em;line-height:1.1}
 .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
 header.tb input.proj{font:600 17px var(--f-ui);border:0;border-bottom:1px dashed var(--line);background:transparent;color:var(--ink);padding:2px 0;min-width:0;width:100%}
@@ -397,7 +398,7 @@ function defaultState(){
   const spaces = exampleSpaces();
   const hub = spaces.find(x=>x.name==="Open Office");
   return {project:"Sample: Office Suite", sample:true, scale:"1/8", spaces, cats:JSON.parse(JSON.stringify(SAMPLE_CATS)), clusterCfg:JSON.parse(JSON.stringify(SAMPLE_CLUSTERS)), outline:false,
-    sheet:{paper:"11x17", orient:"portrait", margin:0.5, gap:0.125, showSF:true, showDia:false, showIcons:true, legend:true},
+    sheet:{paper:"11x17", orient:"portrait", margin:0.5, gap:0.125, showSF:true, showDia:false, showIcons:false, legend:true},
     adj:{pos:{}, pinned:{}, keepPinned:true, showDirect:true, showClose:true, showSF:true, fit:true, seed:1, showIcons:true, showClusters:true, legend:true, clusterStyle:"fill", clusterFill:"#E4E4E4", clusterNames:false, hub:hub?hub.id:""},
     tab:"program"};
 }
@@ -410,7 +411,8 @@ function persist(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStor
 S = load();
 S.spaces.forEach(s=>{ s.icons = Array.isArray(s.icons)? s.icons.filter(k=>ICON_KEYS.includes(k)) : []; s.cluster = s.cluster||""; s.category=s.category||""; s.note=s.note||""; });
 S.cats = S.cats||{}; S.clusterCfg = S.clusterCfg||{}; if(typeof S.outline!=="boolean") S.outline=true;
-if(!S.iconsV2){ S.adj.showIcons=true; S.sheet.showIcons=true; S.iconsV2=true; }
+if(!S.iconsV2){ S.adj.showIcons=true; S.iconsV2=true; }
+if(!S.iconsV3){ S.sheet.showIcons=false; S.iconsV3=true; }
 
 /* ---------- helpers ---------- */
 const $ = id => document.getElementById(id);
